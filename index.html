@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Final Player Design</title>
+    <title>Advanced Video Player</title>
     <style>
         :root {
-            --theme-red: #ff0000;
-            --track-bg: rgba(255, 255, 255, 0.3);
-            --thumb-size: 15px;
+            --theme-color: #00aeff; /* ছবির মতো নীল রঙ */
+            --track-bg: rgba(255, 255, 255, 0.25);
+            --thumb-size: 14px;
             --track-height: 3px;
-            --track-hover-height: 5px;
+            --track-hover-height: 6px;
         }
         * { box-sizing: border-box; }
         body {
@@ -28,8 +28,7 @@
             max-width: 900px;
             position: relative;
             aspect-ratio: 16 / 9;
-            background: #000 url('https://i.ibb.co/wJc7sD3/D-background.png') no-repeat center center;
-            background-size: cover;
+            background: #000;
             user-select: none;
             color: #fff;
         }
@@ -45,9 +44,9 @@
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 60px; height: 60px;
-            border: 5px solid #444;
-            border-top-color: var(--theme-red);
+            width: 50px; height: 50px;
+            border: 4px solid #444;
+            border-top-color: var(--theme-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             z-index: 20;
@@ -58,24 +57,25 @@
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 80px; height: 80px;
+            width: 65px; height: 65px; /* সাইজ মিডিয়াম করা হয়েছে */
             border: none; padding: 0;
-            background-color: rgba(255, 0, 0, 0.9);
+            background-color: rgba(255, 0, 0, 0.85);
             border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
+            display: none; /* শুরুতে হাইড থাকবে */
+            justify-content: center; align-items: center;
             cursor: pointer; z-index: 10;
             transition: transform 0.2s ease, opacity 0.3s ease;
         }
         .big-play-button:hover { transform: translate(-50%, -50%) scale(1.1); }
-        .big-play-button svg { width: 45%; height: 45%; fill: #fff; margin-left: 5px; }
+        .big-play-button svg { width: 40%; height: 40%; fill: #fff; margin-left: 4px; }
         
         .controls-container {
             position: absolute;
             bottom: 0; left: 0; right: 0;
-            padding: 10px 15px;
-            background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+            padding: 5px 15px;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
             opacity: 0; visibility: hidden;
-            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            transition: opacity 0.3s ease-in-out;
             z-index: 8;
         }
         #playerContainer.active .controls-container {
@@ -88,19 +88,19 @@
             gap: 15px;
         }
 
-        .controls-btn { background: none; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center; }
-        .controls-btn svg { width: 24px; height: 24px; fill: #fff; transition: transform 0.2s ease; }
-        .controls-btn:hover svg { transform: scale(1.1); }
+        .controls-btn { background: none; border: none; cursor: pointer; padding: 5px; display: flex; }
+        .controls-btn svg { width: 22px; height: 22px; fill: #fff; }
         .time-display { font-size: 14px; white-space: nowrap; }
         .right-controls { margin-left: auto; display: flex; gap: 10px; align-items: center; }
 
-        /* --- ছবির মতো নতুন প্রোগ্রেস বার --- */
+        /* --- নতুন প্রোগ্রেস বার (নীল বার ছাড়া) --- */
         .progress-container {
             flex-grow: 1;
             height: 20px;
             display: flex;
             align-items: center;
             cursor: pointer;
+            padding: 0; /* দুই পাশের নীল বার সরানোর জন্য */
         }
         input[type="range"].progress-bar {
             -webkit-appearance: none; appearance: none;
@@ -110,7 +110,6 @@
             border-radius: 10px;
             outline: none;
             transition: height 0.2s ease;
-            cursor: pointer;
         }
         .progress-container:hover input[type="range"].progress-bar {
             height: var(--track-hover-height);
@@ -119,32 +118,9 @@
             -webkit-appearance: none; appearance: none;
             width: var(--thumb-size);
             height: var(--thumb-size);
-            background: var(--theme-red);
+            background: var(--theme-color);
             border-radius: 50%;
             border: none;
-            margin-top: -5px; /* Thumb-কে ভার্টিকালি সেন্টারে আনার জন্য */
-        }
-        .progress-container:hover input[type="range"].progress-bar::-webkit-slider-thumb {
-             margin-top: -5px;
-        }
-         /* Firefox এর জন্য */
-        input[type="range"].progress-bar::-moz-range-thumb {
-            width: var(--thumb-size);
-            height: var(--thumb-size);
-            background: var(--theme-red);
-            border-radius: 50%;
-            border: none;
-        }
-        
-        .settings-menu {
-            position: absolute;
-            bottom: 60px; right: 10px;
-            background: rgba(28, 28, 28, 0.9);
-            border-radius: 8px;
-            padding: 10px;
-            width: 220px;
-            z-index: 15;
-            display: none;
         }
         
         .message { text-align: center; color: #aaa; padding: 20px; font-size: 1.1em; }
@@ -194,42 +170,67 @@
         const progressBar = document.getElementById('progressBar');
         const progressContainer = document.getElementById('progressContainer');
         const timeDisplay = document.getElementById('timeDisplay');
-        const settingsBtn = document.getElementById('settingsBtn');
         const fullscreenBtn = document.getElementById('fullscreenBtn');
-        const controlsContainer = document.getElementById('controlsContainer');
 
         const params = new URLSearchParams(window.location.search);
         const videoUrl = params.get("id");
         const posterUrl = params.get("poster");
+        const autoplay = params.get("autoplay") === "true";
 
         if (videoUrl) {
             if (posterUrl) video.poster = posterUrl;
             video.src = videoUrl;
+            
+            // --- Resume Playback Feature ---
+            const storageKey = `video-progress-${videoUrl}`;
+
+            video.addEventListener('loadedmetadata', () => {
+                const savedTime = localStorage.getItem(storageKey);
+                if (savedTime) {
+                    video.currentTime = parseFloat(savedTime);
+                }
+                updateTimeDisplay();
+                updateProgress();
+            });
+
+            // Save progress every 3 seconds
+            setInterval(() => {
+                if (!video.paused && video.duration) {
+                    localStorage.setItem(storageKey, video.currentTime);
+                }
+            }, 3000);
+
         } else {
             loader.style.display = 'none';
-            bigPlayButton.style.display = 'none';
             playerContainer.innerHTML = `<p class="message">❌ URL-এ কোনো ভিডিও লিংক (id) পাওয়া যায়নি!</p>`;
         }
 
         const togglePlay = () => video.paused ? video.play() : video.pause();
         
-        function updateMainButton() {
+        function updatePlayButtonVisibility() {
             const isPaused = video.paused;
             playIcon.style.display = isPaused ? 'block' : 'none';
             pauseIcon.style.display = isPaused ? 'none' : 'block';
-            bigPlayButton.style.display = (isPaused && video.readyState > 2) ? 'flex' : 'none';
+            // Big play button only shows when paused AND video is ready to play
+            if (isPaused && video.readyState >= 3) {
+                bigPlayButton.style.display = 'flex';
+            } else {
+                bigPlayButton.style.display = 'none';
+            }
         }
 
         function updateProgress() {
             const value = (video.currentTime / video.duration) * 100;
             progressBar.value = isNaN(value) ? 0 : value;
-            progressBar.style.background = `linear-gradient(to right, var(--theme-red) ${progressBar.value}%, var(--track-bg) ${progressBar.value}%)`;
+            // Change progress bar color dynamically
+            progressBar.style.background = `linear-gradient(to right, var(--theme-color) ${progressBar.value}%, var(--track-bg) ${progressBar.value}%)`;
         }
 
         function scrub(e) {
             const rect = progressContainer.getBoundingClientRect();
             const percent = Math.min(Math.max(0, e.clientX - rect.x), rect.width) / rect.width;
             video.currentTime = percent * video.duration;
+            updateProgress();
         }
 
         function formatTime(seconds) {
@@ -256,48 +257,38 @@
                 controlsTimeout = setTimeout(() => playerContainer.classList.remove('active'), 3000);
             }
         }
-        
-        function hideControls() {
-            if (!video.paused) {
-                 playerContainer.classList.remove('active');
-            }
-        }
 
         // Event Listeners
-        [bigPlayButton, video, playPauseBtn].forEach(el => el.addEventListener('click', togglePlay));
-        ['play', 'pause'].forEach(ev => video.addEventListener(ev, updateMainButton));
+        [bigPlayButton, video, playPauseBtn].forEach(el => el.addEventListener('click', (e) => {
+             e.stopPropagation(); // Prevents double-triggering click
+             togglePlay();
+        }));
+        ['play', 'pause'].forEach(ev => video.addEventListener(ev, updatePlayButtonVisibility));
         video.addEventListener('timeupdate', () => { updateProgress(); updateTimeDisplay(); });
-        video.addEventListener('loadedmetadata', () => { updateTimeDisplay(); updateProgress(); });
-        progressBar.addEventListener('input', () => video.currentTime = (progressBar.value / 100) * video.duration);
         
         let isScrubbing = false;
-        progressContainer.addEventListener('mousedown', (e) => {
-            isScrubbing = true;
-            scrub(e);
-        });
-        document.addEventListener('mousemove', (e) => {
-            if (isScrubbing) scrub(e);
-        });
+        progressContainer.addEventListener('mousedown', (e) => { isScrubbing = true; scrub(e); });
+        document.addEventListener('mousemove', (e) => { if (isScrubbing) scrub(e); });
         document.addEventListener('mouseup', () => isScrubbing = false);
 
         fullscreenBtn.addEventListener('click', toggleFullscreen);
         playerContainer.addEventListener('mousemove', showControls);
-        playerContainer.addEventListener('mouseleave', hideControls);
+        playerContainer.addEventListener('mouseleave', () => { if (!video.paused) playerContainer.classList.remove('active'); });
         
         video.addEventListener('waiting', () => { loader.style.display = 'block'; bigPlayButton.style.display = 'none'; });
         video.addEventListener('canplay', () => {
             loader.style.display = 'none';
-            updateMainButton();
+            updatePlayButtonVisibility();
+             // --- Autoplay Feature ---
+            if (autoplay) {
+                video.muted = true; // Autoplay usually requires the video to be muted
+                video.play();
+            }
         });
         video.addEventListener('error', () => {
             loader.style.display = 'none';
-            bigPlayButton.style.display = 'none';
             playerContainer.innerHTML = `<p class="message">❌ ভিডিওটি লোড করা যায়নি।<br>লিংক অথবা ফরম্যাট সঠিক কিনা তা পরীক্ষা করুন।</p>`;
         });
-
-        // Initially hide the button until metadata is loaded
-        bigPlayButton.style.display = 'none';
-        loader.style.display = 'block';
 
     </script>
 </body>
