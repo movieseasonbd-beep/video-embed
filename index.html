@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Final Player Design</title>
+    <title>Advanced Video Player</title>
     <style>
         :root {
             --theme-red: #ff0000;
+            --bg-semi-transparent: rgba(28, 28, 28, 0.8);
         }
         * { box-sizing: border-box; }
         body {
@@ -27,20 +28,11 @@
             background: #000;
             user-select: none;
         }
-        video {
-            width: 100%;
-            height: 100%;
-            border: none;
-            outline: none;
-        }
+        video { width: 100%; height: 100%; border: none; outline: none; }
         video::-webkit-media-controls { display: none !important; }
 
-        .overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            transition: opacity 0.3s ease-in-out;
-            z-index: 5;
-        }
+        .overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 5; }
+        .controls-container { transition: opacity 0.3s ease-in-out; }
         
         .loader {
             position: absolute;
@@ -60,15 +52,11 @@
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             width: 80px; height: 80px;
-            border: none;
-            padding: 0;
+            border: none; padding: 0;
             background: rgba(28, 28, 28, 0.7);
             border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            z-index: 10;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 10;
             transition: transform 0.2s ease;
         }
         .big-play-button:hover { transform: translate(-50%, -50%) scale(1.1); }
@@ -76,63 +64,64 @@
             width: 90%; height: 90%;
             background-color: var(--theme-red);
             border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
         }
         .play-icon-container svg { width: 40%; height: 40%; fill: #fff; margin-left: 4px; }
         
-        /* --- নতুন এবং সমাধান করা কন্ট্রোল বার --- */
         .controls-container {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            padding: 0 15px 5px 15px; /* Padding পরিবর্তন করা হয়েছে */
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 0 15px 5px 15px;
             background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-            opacity: 0;
-            visibility: hidden;
-            display: flex; /* Flexbox ব্যবহার করা হয়েছে */
-            flex-direction: column; /* আইটেমগুলোকে উপরে-নিচে সাজানো হয়েছে */
+            opacity: 0; visibility: hidden;
+            display: flex; flex-direction: column;
         }
-        #playerContainer.active .controls-container {
-            opacity: 1;
-            visibility: visible;
-        }
+        #playerContainer.active .controls-container { opacity: 1; visibility: visible; }
 
-        .progress-container { 
-            width: 100%; 
-            padding: 8px 0; 
-            cursor: pointer;
-        }
-        .progress-bar { 
-            width: 100%; 
-            height: 4px; 
-            background-color: rgba(255, 255, 255, 0.3); 
-            border-radius: 5px; 
+        .progress-container { width: 100%; padding: 8px 0; cursor: pointer; }
+        input[type="range"].progress-bar {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px; outline: none;
             transition: height 0.2s ease;
         }
-        .progress-container:hover .progress-bar {
-            height: 6px; /* হোভার করলে বারটি মোটা হবে */
+        .progress-container:hover input[type="range"].progress-bar { height: 7px; }
+        input[type="range"].progress-bar::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 16px; height: 16px;
+            background: var(--theme-red);
+            border-radius: 50%; cursor: pointer;
         }
-        .progress-bar-filled { 
-            height: 100%; 
-            width: 0%; 
-            background-color: var(--theme-red); 
-            border-radius: 5px; 
-        }
-
-        .bottom-controls { 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-            color: #fff; 
-        }
-
-        .controls-btn { background: none; border: none; cursor: pointer; padding: 5px; display: flex; }
-        .controls-btn svg { width: 24px; height: 24px; fill: #fff; transition: transform 0.2s ease; }
-        .controls-btn:hover svg { transform: scale(1.1); }
         
+        .bottom-controls { display: flex; align-items: center; gap: 15px; color: #fff; }
+        .controls-btn { background: none; border: none; cursor: pointer; padding: 5px; display: flex; }
+        .controls-btn svg { width: 24px; height: 24px; fill: #fff; }
         .time-display { font-size: 14px; }
-        .right-controls { margin-left: auto; }
+        .right-controls { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+        
+        /* --- নতুন সেটিংস মেনু --- */
+        .settings-menu {
+            position: absolute;
+            bottom: 60px; right: 10px;
+            background-color: var(--bg-semi-transparent);
+            border-radius: 8px;
+            padding: 10px;
+            width: 220px;
+            z-index: 15;
+            display: none; /* শুরুতে লুকানো */
+        }
+        .settings-menu .menu-item {
+            display: flex; align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .settings-menu .menu-item:hover { background-color: rgba(255,255,255,0.1); }
+        .settings-menu .menu-item svg { width: 22px; height: 22px; fill: #fff; margin-right: 15px; }
+        .settings-menu .menu-item span { flex-grow: 1; }
+        .settings-menu .menu-item .current-setting { color: #aaa; }
+
+        .sub-menu { display: none; } /* সাব-মেনু শুরুতে লুকানো */
         
         .message { text-align: center; color: #aaa; padding: 20px; font-size: 1.1em; }
     </style>
@@ -146,18 +135,45 @@
             </div>
         </button>
         <video id="videoPlayer"></video>
+
+        <!-- সেটিংস মেনু HTML -->
+        <div class="settings-menu" id="settingsMenu">
+            <div id="mainMenu">
+                <div class="menu-item" data-menu="speedMenu">
+                    <svg viewBox="0 0 24 24"><path d="M10,8V16L15,12L10,8M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4C16.4,4 20,7.6 20,12C20,16.4 16.4,20 12,20C7.6,20 4,16.4 4,12C4,7.6 7.6,4 12,4Z"/></svg>
+                    <span>Playback speed</span>
+                    <span class="current-setting" id="currentSpeed">Normal</span>
+                </div>
+            </div>
+            <div id="speedMenu" class="sub-menu">
+                <div class="menu-item" data-speed="0.5"><span>0.5x</span></div>
+                <div class="menu-item" data-speed="0.75"><span>0.75x</span></div>
+                <div class="menu-item" data-speed="1"><span>Normal</span></div>
+                <div class="menu-item" data-speed="1.5"><span>1.5x</span></div>
+                <div class="menu-item" data-speed="2"><span>2.0x</span></div>
+            </div>
+        </div>
+
         <div class="overlay controls-container">
-            <!-- লেআউট এখন সঠিক -->
-            <div class="progress-container" id="progressContainer">
-                <div class="progress-bar"><div class="progress-bar-filled" id="progressFilled"></div></div>
+            <div class="progress-container">
+                <input type="range" class="progress-bar" id="progressBar" value="0" step="0.1">
             </div>
             <div class="bottom-controls">
                 <button class="controls-btn" id="playPauseBtn">
                     <svg id="playIcon" viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"/></svg>
-                    <svg id="pauseIcon" viewBox="0 0 24 24" style="display: none;"><path d="M14,19H18V5H14M6,19H10V5H6V19Z"/></svg>
+                    <svg id="pauseIcon" viewBox="0 0 24 24" style="display:none;"><path d="M14,19H18V5H14M6,19H10V5H6V19Z"/></svg>
                 </button>
                 <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
                 <div class="right-controls">
+                    <button class="controls-btn" id="ccBtn" title="Subtitles/CC">
+                        <svg viewBox="0 0 24 24"><path d="M18,11H16.5V10.5H14.5V13.5H16.5V13H18V14A1,1 0 0,1 17,15H14A1,1 0 0,1 13,14V10A1,1 0 0,1 14,9H17A1,1 0 0,1 18,10V11M11,11H9.5V10.5H7.5V13.5H9.5V13H11V14A1,1 0 0,1 10,15H7A1,1 0 0,1 6,14V10A1,1 0 0,1 7,9H10A1,1 0 0,1 11,10V11Z"/></svg>
+                    </button>
+                    <button class="controls-btn" id="settingsBtn" title="Settings">
+                        <svg viewBox="0 0 24 24"><path d="M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8M12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12A2,2 0 0,0 12,10M10,22C9.75,22 9.5,21.9 9.3,21.7L9,21.4C8.6,21 8.6,20.4 9,20C9.4,19.6 10,19.6 10.4,20L10.7,20.3C10.8,20.4 11,20.5 11.2,20.5C11.5,20.5 11.7,20.4 11.9,20.2L12.2,19.9C12.6,19.5 13.2,19.5 13.6,19.9C14,20.3 14,20.9 13.6,21.3L13.3,21.6C13.1,21.8 12.9,21.9 12.6,22H12.4C12.2,22 11.9,22 11.7,22C11.5,22 11.3,22 11,22H10M19.3,16.2C19.3,16.2 19.3,16.2 19.3,16.2C18.9,15.8 18.9,15.2 19.3,14.8C19.6,14.4 20.2,14.4 20.6,14.8L20.9,15.1C21.1,15.3 21.4,15.4 21.6,15.4C21.8,15.4 22.1,15.3 22.3,15.1L22.6,14.8C23,14.4 23.6,14.4 24,14.8C24.4,15.2 24.4,15.8 24,16.2L23.7,16.5C23.5,16.7 23.3,16.8 23,16.8C22.8,16.8 22.5,16.7 22.3,16.5L22,16.2C21.8,16 21.6,15.9 21.3,15.9C21.1,15.9 20.8,16 20.6,16.2L20.3,16.5C20.1,16.7 19.9,16.8 19.6,16.8C19.5,16.8 19.4,16.8 19.3,16.2M4.7,16.2C4.3,15.8 4.3,15.2 4.7,14.8C5.1,14.4 5.7,14.4 6.1,14.8L6.4,15.1C6.6,15.3 6.9,15.4 7.1,15.4C7.3,15.4 7.6,15.3 7.8,15.1L8.1,14.8C8.5,14.4 9.1,14.4 9.5,14.8C9.9,15.2 9.9,15.8 9.5,16.2L9.2,16.5C9,16.7 8.8,16.8 8.5,16.8C8.3,16.8 8,16.7 7.8,16.5L7.5,16.2C7.3,16 7.1,15.9 6.8,15.9C6.6,15.9 6.3,16 6.1,16.2L5.8,16.5C5.6,16.7 5.4,16.8 5.1,16.8C5,16.8 4.8,16.8 4.7,16.2M12,22C11.9,22 11.9,22 11.9,22C11.9,22 11.9,22 11.9,22C11.9,22 11.9,22 11.9,22C11.9,22 11.9,22 11.9,22H11.7C11.5,22 11.3,22 11,22H10C9.75,22 9.5,21.9 9.3,21.7L9,21.4C8.6,21 8.6,20.4 9,20C9.4,19.6 10,19.6 10.4,20L10.7,20.3C10.8,20.4 11,20.5 11.2,20.5C11.5,20.5 11.7,20.4 11.9,20.2L12.2,19.9C12.6,19.5 13.2,19.5 13.6,19.9C14,20.3 14,20.9 13.6,21.3L13.3,21.6C13.1,21.8 12.9,21.9 12.6,22H12.4C12.2,22 11.9,22 11.7,22H11.9M19.3,9.2C18.9,8.8 18.9,8.2 19.3,7.8C19.7,7.4 20.3,7.4 20.7,7.8L21,8.1C21.2,8.3 21.5,8.4 21.7,8.4C22,8.4 22.2,8.3 22.4,8.1L22.7,7.8C23.1,7.4 23.7,7.4 24.1,7.8C24.5,8.2 24.5,8.8 24.1,9.2L23.8,9.5C23.6,9.7 23.4,9.8 23.1,9.8C22.9,9.8 22.6,9.7 22.4,9.5L22.1,9.2C21.9,9 21.7,8.9 21.4,8.9C21.2,8.9 20.9,9 20.7,9.2L20.4,9.5C20.2,9.7 20,9.8 19.7,9.8C19.6,9.8 19.4,9.8 19.3,9.2M4.7,9.2C4.3,8.8 4.3,8.2 4.7,7.8C5.1,7.4 5.7,7.4 6.1,7.8L6.4,8.1C6.6,8.3 6.9,8.4 7.1,8.4C7.4,8.4 7.6,8.3 7.8,8.1L8.1,7.8C8.5,7.4 9.1,7.4 9.5,7.8C9.9,8.2 9.9,8.8 9.5,9.2L9.2,9.5C9,9.7 8.8,9.8 8.5,9.8C8.3,9.8 8.1,9.7 7.9,9.5L7.6,9.2C7.4,9 7.1,8.9 6.9,8.9C6.6,8.9 6.4,9 6.1,9.2L5.8,9.5C5.6,9.7 5.4,9.8 5.1,9.8C5,9.8 4.8,9.8 4.7,9.2M12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6M12,2C6.5,2 2,6.5 2,12C2,17.5 6.5,22 12,22C17.5,22 22,17.5 22,12C22,6.5 17.5,2 12,2Z"/></svg>
+                    </button>
+                    <button class="controls-btn" id="pipBtn" title="Picture-in-Picture">
+                        <svg viewBox="0 0 24 24"><path d="M19,11H11V17H19V11M17,15H13V13H17V15M21,3H3A2,2 0 0,0 1,5V19A2,2 0 0,0 3,21H21A2,2 0 0,0 23,19V5A2,2 0 0,0 21,3M21,19H3V5H21V19Z"/></svg>
+                    </button>
                     <button class="controls-btn" id="fullscreenBtn" title="Fullscreen">
                          <svg viewBox="0 0 24 24"><path d="M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M7,17H10V19H5V14H7V17Z"/></svg>
                     </button>
@@ -173,18 +189,33 @@
         const playPauseBtn = document.getElementById('playPauseBtn');
         const playIcon = document.getElementById('playIcon');
         const pauseIcon = document.getElementById('pauseIcon');
-        const progressContainer = document.getElementById('progressContainer');
-        const progressFilled = document.getElementById('progressFilled');
+        const progressBar = document.getElementById('progressBar');
         const timeDisplay = document.getElementById('timeDisplay');
+        const ccBtn = document.getElementById('ccBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const pipBtn = document.getElementById('pipBtn');
         const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const settingsMenu = document.getElementById('settingsMenu');
+        const speedMenu = document.getElementById('speedMenu');
+        const currentSpeed = document.getElementById('currentSpeed');
 
         const params = new URLSearchParams(window.location.search);
         const videoUrl = params.get("id");
         const posterUrl = params.get("poster");
+        const subUrl = params.get("sub");
+        const subLang = params.get("sub_lang") || 'en';
 
         if (videoUrl) {
             if (posterUrl) video.poster = posterUrl;
             video.src = videoUrl;
+            if (subUrl) {
+                const track = document.createElement('track');
+                track.kind = 'subtitles';
+                track.label = 'Default';
+                track.srclang = subLang;
+                track.src = subUrl;
+                video.appendChild(track);
+            }
         } else {
             loader.style.display = 'none';
             playerContainer.innerHTML = `<p class="message">❌ URL-এ কোনো ভিডিও লিংক (id) পাওয়া যায়নি!</p>`;
@@ -200,13 +231,13 @@
         }
 
         function updateProgress() {
-            const percentage = (video.currentTime / video.duration) * 100;
-            progressFilled.style.width = `${percentage}%`;
+            const value = (video.currentTime / video.duration) * 100;
+            progressBar.value = value;
+            progressBar.style.background = `linear-gradient(to right, var(--theme-red) ${value}%, rgba(255,255,255,0.3) ${value}%)`;
         }
 
         function seek(e) {
-            const clickX = e.offsetX;
-            const seekTime = (clickX / progressContainer.clientWidth) * video.duration;
+            const seekTime = (progressBar.value / 100) * video.duration;
             video.currentTime = seekTime;
         }
 
@@ -220,6 +251,30 @@
         function updateTimeDisplay() {
             timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
         }
+
+        function toggleSubtitles() {
+            const track = video.textTracks[0];
+            if (!track) return;
+            track.mode = track.mode === 'showing' ? 'hidden' : 'showing';
+            ccBtn.style.opacity = track.mode === 'showing' ? '1' : '0.6';
+        }
+
+        function toggleSettingsMenu() {
+            settingsMenu.style.display = settingsMenu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function setPlaybackSpeed(speed) {
+            video.playbackRate = speed;
+            currentSpeed.textContent = speed === 1 ? 'Normal' : `${speed}x`;
+            settingsMenu.style.display = 'none';
+        }
+
+        const togglePip = async () => {
+            try {
+                if (video !== document.pictureInPictureElement) await video.requestPictureInPicture();
+                else await document.exitPictureInPicture();
+            } catch (e) { console.error(e); }
+        };
 
         function toggleFullscreen() {
             if (!document.fullscreenElement) playerContainer.requestFullscreen();
@@ -239,8 +294,16 @@
         ['play', 'pause'].forEach(ev => video.addEventListener(ev, updateMainButton));
         video.addEventListener('timeupdate', () => { updateProgress(); updateTimeDisplay(); });
         video.addEventListener('loadedmetadata', updateTimeDisplay);
-        progressContainer.addEventListener('click', seek);
+        progressBar.addEventListener('input', seek);
+        ccBtn.addEventListener('click', toggleSubtitles);
+        settingsBtn.addEventListener('click', toggleSettingsMenu);
+        pipBtn.addEventListener('click', togglePip);
         fullscreenBtn.addEventListener('click', toggleFullscreen);
+        
+        speedMenu.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', () => setPlaybackSpeed(parseFloat(item.dataset.speed)));
+        });
+
         ['mouseenter', 'mousemove'].forEach(ev => playerContainer.addEventListener(ev, showControls));
         playerContainer.addEventListener('mouseleave', () => {
              if (!video.paused) playerContainer.classList.remove('active');
