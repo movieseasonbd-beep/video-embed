@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Video Player</title>
+    <title>Advanced Video Player</title>
     <style>
         :root {
-            --theme-color: #ff0000; /* আপনার অনুরোধ অনুযায়ী থিমের রঙ লাল করা হলো */
-            --track-bg: rgba(255, 255, 255, 0.3);
-            --thumb-size: 15px;
-            --track-height: 2px; /* ছবির মতো চিকন করা হলো */
-            --track-hover-height: 5px;
+            --theme-color: #00aeff; /* ছবির মতো নীল রঙ */
+            --track-bg: rgba(255, 255, 255, 0.25);
+            --thumb-size: 14px;
+            --track-height: 3px;
+            --track-hover-height: 6px;
         }
         * { box-sizing: border-box; }
         body {
@@ -53,16 +53,15 @@
         }
         @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
-        /* --- নতুন ডিজাইনের প্লে-বাটন --- */
         .big-play-button {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 70px; height: 70px;
+            width: 65px; height: 65px; /* সাইজ মিডিয়াম করা হয়েছে */
             border: none; padding: 0;
-            background-color: rgba(255, 0, 0, 0.8); /* আপনার অনুরোধ অনুযায়ী লাল */
+            background-color: rgba(255, 0, 0, 0.85);
             border-radius: 50%;
-            display: none;
+            display: none; /* শুরুতে হাইড থাকবে */
             justify-content: center; align-items: center;
             cursor: pointer; z-index: 10;
             transition: transform 0.2s ease, opacity 0.3s ease;
@@ -94,13 +93,14 @@
         .time-display { font-size: 14px; white-space: nowrap; }
         .right-controls { margin-left: auto; display: flex; gap: 10px; align-items: center; }
 
-        /* --- নতুন ডিজাইনের প্রোগ্রেস বার --- */
+        /* --- নতুন প্রোগ্রেস বার (নীল বার ছাড়া) --- */
         .progress-container {
             flex-grow: 1;
             height: 20px;
             display: flex;
             align-items: center;
             cursor: pointer;
+            padding: 0; /* দুই পাশের নীল বার সরানোর জন্য */
         }
         input[type="range"].progress-bar {
             -webkit-appearance: none; appearance: none;
@@ -118,7 +118,7 @@
             -webkit-appearance: none; appearance: none;
             width: var(--thumb-size);
             height: var(--thumb-size);
-            background: var(--theme-color); /* থাম্বের রঙ লাল করা হলো */
+            background: var(--theme-color);
             border-radius: 50%;
             border: none;
         }
@@ -181,7 +181,7 @@
             if (posterUrl) video.poster = posterUrl;
             video.src = videoUrl;
             
-            // Resume Playback Feature
+            // --- Resume Playback Feature ---
             const storageKey = `video-progress-${videoUrl}`;
 
             video.addEventListener('loadedmetadata', () => {
@@ -211,6 +211,7 @@
             const isPaused = video.paused;
             playIcon.style.display = isPaused ? 'block' : 'none';
             pauseIcon.style.display = isPaused ? 'none' : 'block';
+            // Big play button only shows when paused AND video is ready to play
             if (isPaused && video.readyState >= 3) {
                 bigPlayButton.style.display = 'flex';
             } else {
@@ -221,6 +222,7 @@
         function updateProgress() {
             const value = (video.currentTime / video.duration) * 100;
             progressBar.value = isNaN(value) ? 0 : value;
+            // Change progress bar color dynamically
             progressBar.style.background = `linear-gradient(to right, var(--theme-color) ${progressBar.value}%, var(--track-bg) ${progressBar.value}%)`;
         }
 
@@ -258,7 +260,7 @@
 
         // Event Listeners
         [bigPlayButton, video, playPauseBtn].forEach(el => el.addEventListener('click', (e) => {
-             e.stopPropagation();
+             e.stopPropagation(); // Prevents double-triggering click
              togglePlay();
         }));
         ['play', 'pause'].forEach(ev => video.addEventListener(ev, updatePlayButtonVisibility));
@@ -277,8 +279,9 @@
         video.addEventListener('canplay', () => {
             loader.style.display = 'none';
             updatePlayButtonVisibility();
+             // --- Autoplay Feature ---
             if (autoplay) {
-                video.muted = true;
+                video.muted = true; // Autoplay usually requires the video to be muted
                 video.play();
             }
         });
