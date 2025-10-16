@@ -29,10 +29,23 @@
         border: none;
         outline: none;
         background: #000;
-        
-        /* --- আপনার অনুরোধ অনুযায়ী, শুধুমাত্র এই একটি লাইনই প্রোগ্রেস বারের দেখা অংশ (সাদা অংশ) এবং গোল হ্যান্ডেলটিকে লাল করবে --- */
-        accent-color: red;
+        /* accent-color কোডটি মুছে ফেলা হয়েছে কারণ এটি কাজ করছিল না। */
       }
+
+      /* --- শুধুমাত্র প্রোগ্রেস বার এবং হ্যান্ডেল লাল করার জন্য নতুন এবং কার্যকরী কোড --- */
+      
+      /* টার্গেট ১: প্রোগ্রেস বারের ভরাট হওয়া অংশটিকে (আগের সাদা অংশ) লাল করা হলো */
+      video::-webkit-progress-value {
+          background-color: red !important;
+      }
+
+      /* টার্গেট ২: প্রোগ্রেস বারের গোলাকার হ্যান্ডেলটিকে (thumb) লাল করা হলো */
+      video::-webkit-media-controls-timeline::-webkit-slider-thumb {
+          background: red !important;
+          border: none;
+          box-shadow: none;
+      }
+      /* --- নতুন কোড শেষ --- */
 
       .message {
         text-align: center;
