@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player with Poster</title>
+    <title>Modern Video Player</title>
     <style>
+        :root {
+            --theme-color: #E50914; /* প্রধান লাল রঙ */
+        }
         * { box-sizing: border-box; }
         body {
             margin: 0;
@@ -13,17 +16,17 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            color: #fff;
             font-family: Arial, sans-serif;
-            overflow: hidden; /* To prevent scrollbars */
+            overflow: hidden;
         }
         #playerContainer {
             width: 100%;
             max-width: 900px;
             position: relative;
-            background: #000;
             aspect-ratio: 16 / 9;
-            box-shadow: 0 0 25px rgba(0, 0, 0, 0.8); 
+            background: #000;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+            color: #fff;
         }
         video {
             width: 100%;
@@ -31,6 +34,10 @@
             border: none;
             outline: none;
             background: #000;
+        }
+        /* ডিফল্ট কন্ট্রোল পুরোপুরি লুকানো */
+        video::-webkit-media-controls {
+            display: none !important;
         }
         .message {
             text-align: center;
@@ -40,121 +47,323 @@
         }
         .loader {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             border: 4px solid #444;
-            border-top: 4px solid #fff;
+            border-top: 4px solid var(--theme-color);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 50px; height: 50px;
             animation: spin 1s linear infinite;
             z-index: 20;
         }
         @keyframes spin {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
-        /* --- সুন্দর প্লে-বাটনের জন্য CSS --- */
-        .play-button-overlay {
+        /* --- নতুন কন্ট্রোলের ডিজাইন --- */
+        .controls-container {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 70px;
-            height: 70px;
-            background-color: rgba(0, 0, 0, 0.6);
-            border: 2px solid #fff;
-            border-radius: 50%;
-            display: none; /* শুরুতে লুকানো থাকবে */
-            justify-content: center;
+            bottom: 0; left: 0; right: 0;
+            padding: 10px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 15;
+        }
+        #playerContainer.active .controls-container {
+            opacity: 1;
+        }
+        .controls {
+            display: flex;
             align-items: center;
+            gap: 15px;
+        }
+        .controls button {
+            background: none;
+            border: none;
             cursor: pointer;
-            transition: transform 0.2s ease, background-color 0.2s ease;
-            z-index: 10;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .play-button-overlay:hover {
-            background-color: rgba(220, 50, 50, 0.8);
-            transform: translate(-50%, -50%) scale(1.1);
-        }
-        .play-button-overlay svg {
-            width: 35px;
-            height: 35px;
+        .controls button svg {
+            width: 24px; height: 24px;
             fill: #fff;
-            padding-left: 5px; /* দেখতে সুন্দর করার জন্য */
+            transition: transform 0.2s ease;
+        }
+        .controls button:hover svg {
+            transform: scale(1.15);
+            fill: var(--theme-color);
+        }
+
+        /* প্রোগ্রেস বার */
+        .progress-container {
+            width: 100%;
+            height: 12px;
+            cursor: pointer;
+            padding: 4px 0;
+        }
+        .progress-bar {
+            background-color: rgba(255, 255, 255, 0.3);
+            height: 4px;
+            width: 100%;
+            position: relative;
+            border-radius: 5px;
+        }
+        .progress-filled {
+            background-color: var(--theme-color);
+            height: 100%;
+            width: 0%;
+            border-radius: 5px;
+            position: relative;
+            transition: width 0.1s linear;
+        }
+        .progress-filled::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translate(50%, -50%) scale(0);
+            width: 14px; height: 14px;
+            background-color: #fff;
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+        }
+        .progress-container:hover .progress-filled::after {
+            transform: translate(50%, -50%) scale(1);
+        }
+
+        .time-display {
+            font-size: 14px;
+            user-select: none;
+        }
+        .right-controls {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* ভলিউম কন্ট্রোল */
+        .volume-container {
+            display: flex;
+            align-items: center;
+        }
+        .volume-slider {
+            width: 0px;
+            height: 4px;
+            transition: width 0.3s ease-in-out;
+            cursor: pointer;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            outline-color: var(--theme-color);
+        }
+        .volume-container:hover .volume-slider {
+            width: 80px;
+            margin-left: 8px;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
     <div id="playerContainer">
         <div class="loader" id="loader"></div>
-        <!-- পোস্টারের উপরে দেখানোর জন্য প্লে বাটন -->
-        <div class="play-button-overlay" id="playButton">
-            <svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>
+        <video id="videoPlayer"></video>
+        
+        <div class="controls-container">
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-filled" id="progressFilled"></div>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="playPauseBtn">
+                    <svg id="playIcon" viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"/></svg>
+                    <svg id="pauseIcon" viewBox="0 0 24 24" style="display: none;"><path d="M14,19H18V5H14M6,19H10V5H6V19Z"/></svg>
+                </button>
+                <div class="volume-container">
+                    <button id="volumeBtn">
+                        <svg id="volumeHighIcon" viewBox="0 0 24 24"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/></svg>
+                        <svg id="volumeMuteIcon" viewBox="0 0 24 24" style="display: none;"><path d="M12,4L7,9H3V15H7L12,20V4M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M19,12C19,15.17 16.89,17.85 14,18.71V20.77C18,19.86 21,16.28 21,7.72C18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12Z"/></svg>
+                    </button>
+                    <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.05" value="1">
+                </div>
+                <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
+                <div class="right-controls">
+                    <button id="fullscreenBtn">
+                        <svg viewBox="0 0 24 24"><path d="M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M7,17H10V19H5V14H7V17Z"/></svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
+        const playerContainer = document.getElementById('playerContainer');
+        const video = document.getElementById('videoPlayer');
+        const loader = document.getElementById('loader');
+
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFilled = document.getElementById('progressFilled');
+        const timeDisplay = document.getElementById('timeDisplay');
+
+        const volumeBtn = document.getElementById('volumeBtn');
+        const volumeHighIcon = document.getElementById('volumeHighIcon');
+        const volumeMuteIcon = document.getElementById('volumeMuteIcon');
+        const volumeSlider = document.getElementById('volumeSlider');
+        
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+        // URL থেকে প্যারামিটার নেওয়া
         const params = new URLSearchParams(window.location.search);
         const videoUrl = params.get("id");
-        const posterUrl = params.get("poster"); 
-        
-        const container = document.getElementById("playerContainer");
-        const loader = document.getElementById("loader");
-        const playButton = document.getElementById("playButton");
+        const posterUrl = params.get("poster");
 
         if (videoUrl) {
-            const video = document.createElement("video");
-            video.setAttribute("controls", "");
-            video.setAttribute("playsinline", "");
-            
-            // যদি পোস্টার লিংক থাকে, তবে তা যোগ করা হচ্ছে
-            if (posterUrl) {
-                video.setAttribute("poster", posterUrl);
-            }
-
-            const source = document.createElement("source");
-            source.src = videoUrl;
-            video.appendChild(source);
-            container.appendChild(video);
-
-            video.addEventListener("canplay", () => {
-                loader.style.display = "none";
-                // যদি ভিডিওটি autoplay না হয় এবং থেমে থাকে, তবে প্লে বাটন দেখাবে
-                if (video.paused) {
-                    playButton.style.display = "flex";
-                }
-            });
-
-            // প্লে বাটনে ক্লিক করলে ভিডিও চলবে এবং বাটনটি লুকিয়ে যাবে
-            playButton.addEventListener("click", () => {
-                video.play();
-            });
-
-            // ভিডিও চলতে শুরু করলে প্লে বাটন লুকিয়ে যাবে
-            video.addEventListener("play", () => {
-                playButton.style.display = "none";
-            });
-
-            // ভিডিও পজ হলে প্লে বাটন আবার দেখা যাবে
-            video.addEventListener("pause", () => {
-                if (!video.ended) {
-                    playButton.style.display = "flex";
-                }
-            });
-
-            // ভিডিও লোড হতে ব্যর্থ হলে এরর মেসেজ দেখাবে
-            video.addEventListener("error", () => {
-                loader.style.display = "none";
-                playButton.style.display = "none";
-                container.innerHTML = "<p class='message'>❌ ভিডিওটি লোড করা যায়নি।<br>লিংক অথবা ভিডিও ফরম্যাট (`.mp4`) সঠিক কিনা তা পরীক্ষা করুন।</p>";
-            });
-
+            if (posterUrl) video.poster = posterUrl;
+            video.src = videoUrl;
         } else {
-            loader.style.display = "none";
-            container.innerHTML = "<p class='message'>❌ URL-এ কোনো ভিডিও লিংক (id) পাওয়া যায়নি!</p>";
+            loader.style.display = 'none';
+            playerContainer.innerHTML = "<p class='message'>❌ URL-এ কোনো ভিডিও লিংক (id) পাওয়া যায়নি!</p>";
         }
+
+        // --- প্লেয়ারের কার্যকারিতা ---
+
+        // প্লে/পজ টগল
+        function togglePlay() {
+            if (video.paused) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        }
+
+        function updatePlayPauseIcon() {
+            if (video.paused) {
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+            } else {
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+            }
+        }
+
+        // প্রোগ্রেস বার আপডেট
+        function updateProgress() {
+            const percentage = (video.currentTime / video.duration) * 100;
+            progressFilled.style.width = `${percentage}%`;
+            
+            const totalDuration = formatTime(video.duration);
+            const currentTime = formatTime(video.currentTime);
+            timeDisplay.textContent = `${currentTime} / ${totalDuration}`;
+        }
+        
+        // ভিডিও seek করা
+        function seek(e) {
+            const seekTime = (e.offsetX / progressContainer.clientWidth) * video.duration;
+            video.currentTime = seekTime;
+        }
+
+        // সময় ফরম্যাট করা (00:00)
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        // ভলিউম পরিবর্তন
+        function handleVolumeChange() {
+            video.volume = volumeSlider.value;
+            video.muted = volumeSlider.value === 0;
+        }
+
+        function updateVolumeIcon() {
+            if (video.muted || video.volume === 0) {
+                volumeHighIcon.style.display = 'none';
+                volumeMuteIcon.style.display = 'block';
+            } else {
+                volumeHighIcon.style.display = 'block';
+                volumeMuteIcon.style.display = 'none';
+            }
+        }
+        
+        function toggleMute() {
+            video.muted = !video.muted;
+            if (video.muted) {
+                volumeSlider.value = 0;
+            } else {
+                volumeSlider.value = video.volume > 0 ? video.volume : 1;
+            }
+            updateVolumeIcon();
+        }
+
+        // ফুলস্ক্রিন টগল
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                playerContainer.requestFullscreen().catch(err => alert(`Fullscreen error: ${err.message}`));
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // কন্ট্রোল অটো-হাইড
+        let controlsTimeout;
+        function showControls() {
+            playerContainer.classList.add('active');
+            clearTimeout(controlsTimeout);
+            controlsTimeout = setTimeout(() => {
+                if (!video.paused) {
+                    playerContainer.classList.remove('active');
+                }
+            }, 3000);
+        }
+
+        // --- ইভেন্ট লিসেনার যোগ করা ---
+        video.addEventListener('click', togglePlay);
+        playPauseBtn.addEventListener('click', togglePlay);
+        video.addEventListener('play', updatePlayPauseIcon);
+        video.addEventListener('pause', updatePlayPauseIcon);
+        video.addEventListener('timeupdate', updateProgress);
+        video.addEventListener('loadedmetadata', updateProgress);
+        
+        progressContainer.addEventListener('click', seek);
+        
+        volumeSlider.addEventListener('input', handleVolumeChange);
+        volumeBtn.addEventListener('click', toggleMute);
+        video.addEventListener('volumechange', updateVolumeIcon);
+
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+        // কন্ট্রোল দেখানোর জন্য
+        playerContainer.addEventListener('mouseenter', showControls);
+        playerContainer.addEventListener('mousemove', showControls);
+        playerContainer.addEventListener('mouseleave', () => {
+             clearTimeout(controlsTimeout);
+             if (!video.paused) playerContainer.classList.remove('active');
+        });
+
+        // ভিডিও লোডিং ও এরর হ্যান্ডলিং
+        video.addEventListener('waiting', () => loader.style.display = 'block');
+        video.addEventListener('canplay', () => loader.style.display = 'none');
+        video.addEventListener('error', () => {
+            loader.style.display = 'none';
+            playerContainer.innerHTML = "<p class='message'>❌ ভিডিওটি লোড করা যায়নি।<br>লিংক অথবা ভিডিও ফরম্যাট (`.mp4`) সঠিক কিনা তা পরীক্ষা করুন।</p>";
+        });
+
     </script>
 </body>
 </html>
