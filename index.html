@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Player</title>
     <style>
-      * { box-sizing: border-box; }
+      * { 
+        box-sizing: border-box; 
+      }
+
       body {
         margin: 0;
         background: #000;
@@ -16,6 +19,7 @@
         color: #fff;
         font-family: Arial, sans-serif;
       }
+
       #playerContainer {
         width: 100%;
         max-width: 900px;
@@ -23,17 +27,33 @@
         background: #000;
         aspect-ratio: 16 / 9;
       }
+
       video {
         width: 100%;
         height: 100%;
         border: none;
         outline: none;
         background: #000;
+        /* প্রোগ্রেস বার এবং স্লাইডারের রঙ লাল করার জন্য */
+        accent-color: red;
       }
+
+      /* WebKit-ভিত্তিক ব্রাউজারের (Chrome, Safari, Edge) জন্য প্লে বাটন এবং অন্যান্য আইকনের রঙ লাল করা */
+      video::-webkit-media-controls-panel {
+        color: red;
+      }
+      
+      video::-webkit-media-controls-play-button,
+      video::-webkit-media-controls-mute-button,
+      video::-webkit-media-controls-fullscreen-button {
+          filter: invert(15%) sepia(100%) saturate(6500%) hue-rotate(355deg) brightness(100%) contrast(110%);
+      }
+
       .message {
         text-align: center;
         color: #888;
       }
+
       .loader {
         position: absolute;
         top: 50%;
@@ -46,6 +66,7 @@
         height: 40px;
         animation: spin 1s linear infinite;
       }
+
       @keyframes spin {
         0% { transform: translate(-50%, -50%) rotate(0deg); }
         100% { transform: translate(-50%, -50%) rotate(360deg); }
@@ -80,6 +101,23 @@
           loader.remove();
           video.style.display = "block";
         });
+
+        // ফিচার ১: ভিডিওর বর্তমান সময় localStorage-এ সেভ করা
+        video.addEventListener("timeupdate", () => {
+          // ভিডিওর সময় ৫ সেকেন্ডের বেশি হলেই কেবল সেভ হবে
+          if (video.currentTime > 5) {
+            localStorage.setItem(videoUrl, video.currentTime);
+          }
+        });
+
+        // ফিচার ১: ভিডিও লোড হওয়ার সময় সেভ করা সময় থেকে চালু করা
+        video.addEventListener("loadedmetadata", () => {
+          const savedTime = localStorage.getItem(videoUrl);
+          if (savedTime) {
+            video.currentTime = parseFloat(savedTime);
+          }
+        });
+
       } else {
         loader.remove();
         container.innerHTML = "<p class='message'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
