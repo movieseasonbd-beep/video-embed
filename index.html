@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="bn">
-  <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Player</title>
@@ -8,7 +8,7 @@
       * { box-sizing: border-box; }
       body {
         margin: 0;
-        background: #000;
+        background: #111; /* ছবির মতো ডার্ক ব্যাকগ্রাউন্ড */
         display: flex;
         justify-content: center;
         align-items: center;
@@ -22,6 +22,7 @@
         position: relative;
         background: #000;
         aspect-ratio: 16 / 9;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* সামান্য শ্যাডো ইফেক্ট */
       }
       video {
         width: 100%;
@@ -31,22 +32,33 @@
         background: #000;
       }
 
-      /* --- সব ব্রাউজারের জন্য নতুন এবং পূর্ণাঙ্গ কোড --- */
+      /* --- নতুন ডিজাইন এবং রঙের জন্য কোড --- */
 
       /* ১. Chrome, Safari, Edge, Opera ব্রাউজারের জন্য */
+      video::-webkit-media-controls-timeline {
+          background-color: rgba(255, 255, 255, 0.2); /* টাইমলাইনের ব্যাকগ্রাউন্ড */
+          border-radius: 5px;
+          margin: 0 10px;
+      }
       video::-webkit-progress-value {
-          background-color: red !important;
+          background-color: #28a745 !important; /* সবুজ Progress Bar */
+          border-radius: 5px;
       }
       video::-webkit-media-controls-timeline::-webkit-slider-thumb {
-          background: red !important;
+          background: #fff !important; /* স্লাইডার বাটন */
+          border-radius: 50%;
+          width: 12px;
+          height: 12px;
       }
-      
+
       /* ২. Firefox ব্রাউজারের জন্য */
       video::-moz-progress-bar {
-          background: red !important;
+          background: #28a745 !important; /* সবুজ Progress Bar */
       }
       video::-moz-range-thumb {
-          background: red !important;
+          background: #fff !important; /* স্লাইডার বাটন */
+          border: none;
+          border-radius: 50%;
       }
       
       /* --- নতুন কোড শেষ --- */
@@ -61,7 +73,7 @@
         left: 50%;
         transform: translate(-50%, -50%);
         border: 4px solid #444;
-        border-top: 4px solid red;
+        border-top: 4px solid #28a745; /* লোডারের রঙ পরিবর্তন করা হয়েছে */
         border-radius: 50%;
         width: 40px;
         height: 40px;
@@ -72,8 +84,8 @@
         100% { transform: translate(-50%, -50%) rotate(360deg); }
       }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div id="playerContainer">
       <div class="loader" id="loader"></div>
     </div>
@@ -122,5 +134,5 @@
         container.innerHTML = "<p class='message'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
       }
     </script>
-  </body>
+</body>
 </html>
