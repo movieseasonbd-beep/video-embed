@@ -34,19 +34,31 @@
         border: none;
         outline: none;
         background: #000;
-        /* প্রোগ্রেস বার এবং স্লাইডারের রঙ লাল করার জন্য */
+        /* আধুনিক ব্রাউজারের জন্য প্রোগ্রেস বারের রঙ লাল করা */
         accent-color: red;
       }
 
-      /* WebKit-ভিত্তিক ব্রাউজারের (Chrome, Safari, Edge) জন্য প্লে বাটন এবং অন্যান্য আইকনের রঙ লাল করা */
-      video::-webkit-media-controls-panel {
-        color: red;
+      /* --- নতুন এবং উন্নত CSS কোড --- */
+
+      /* প্রোগ্রেস বারের الخلفية রঙ পরিবর্তন */
+      video::-webkit-media-controls-timeline {
+        background-color: #555;
+        border-radius: 25px;
+        height: 5px;
+        margin: 0 10px;
       }
       
+      /* WebKit ব্রাউজারের (Chrome, Safari) কন্ট্রোল আইকনগুলোকে লাল করার জন্য */
       video::-webkit-media-controls-play-button,
       video::-webkit-media-controls-mute-button,
       video::-webkit-media-controls-fullscreen-button {
-          filter: invert(15%) sepia(100%) saturate(6500%) hue-rotate(355deg) brightness(100%) contrast(110%);
+        /* এই ফিল্টারটি সাদা আইকনকে লাল রঙে পরিবর্তন করবে */
+        filter: grayscale(1) brightness(50%) sepia(100%) hue-rotate(-50deg) saturate(1000%) contrast(1);
+      }
+      
+      /* Firefox এর জন্য প্লে বাটন লাল করা */
+      .play-button {
+          background-color: red !important;
       }
 
       .message {
@@ -102,15 +114,14 @@
           video.style.display = "block";
         });
 
-        // ফিচার ১: ভিডিওর বর্তমান সময় localStorage-এ সেভ করা
+        // ভিডিওর বর্তমান সময় localStorage-এ সেভ করা
         video.addEventListener("timeupdate", () => {
-          // ভিডিওর সময় ৫ সেকেন্ডের বেশি হলেই কেবল সেভ হবে
           if (video.currentTime > 5) {
             localStorage.setItem(videoUrl, video.currentTime);
           }
         });
 
-        // ফিচার ১: ভিডিও লোড হওয়ার সময় সেভ করা সময় থেকে চালু করা
+        // ভিডিও লোড হওয়ার সময় সেভ করা সময় থেকে চালু করা
         video.addEventListener("loadedmetadata", () => {
           const savedTime = localStorage.getItem(videoUrl);
           if (savedTime) {
