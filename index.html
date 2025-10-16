@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Style Player</title>
+    <title>Final Player Design</title>
     <style>
         :root {
             --theme-red: #ff0000;
@@ -42,7 +42,6 @@
             z-index: 5;
         }
         
-        /* নতুন লোডার */
         .loader {
             position: absolute;
             top: 50%; left: 50%;
@@ -56,7 +55,6 @@
         }
         @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
-        /* নতুন YouTube-স্টাইল প্লে বাটন */
         .big-play-button {
             position: absolute;
             top: 50%; left: 50%;
@@ -64,7 +62,7 @@
             width: 80px; height: 80px;
             border: none;
             padding: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(28, 28, 28, 0.7);
             border-radius: 50%;
             display: flex;
             justify-content: center;
@@ -84,25 +82,50 @@
         }
         .play-icon-container svg { width: 40%; height: 40%; fill: #fff; margin-left: 4px; }
         
-        /* নতুন কন্ট্রোল বার */
+        /* --- নতুন এবং সমাধান করা কন্ট্রোল বার --- */
         .controls-container {
             position: absolute;
             bottom: 0; left: 0; right: 0;
-            padding: 5px 10px;
+            padding: 0 15px 5px 15px; /* Padding পরিবর্তন করা হয়েছে */
             background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
             opacity: 0;
             visibility: hidden;
+            display: flex; /* Flexbox ব্যবহার করা হয়েছে */
+            flex-direction: column; /* আইটেমগুলোকে উপরে-নিচে সাজানো হয়েছে */
         }
         #playerContainer.active .controls-container {
             opacity: 1;
             visibility: visible;
         }
 
-        .progress-container { width: 100%; padding: 5px 0; cursor: pointer; }
-        .progress-bar { width: 100%; height: 4px; background-color: rgba(255, 255, 255, 0.3); border-radius: 5px; }
-        .progress-bar-filled { height: 100%; width: 0%; background-color: var(--theme-red); border-radius: 5px; }
+        .progress-container { 
+            width: 100%; 
+            padding: 8px 0; 
+            cursor: pointer;
+        }
+        .progress-bar { 
+            width: 100%; 
+            height: 4px; 
+            background-color: rgba(255, 255, 255, 0.3); 
+            border-radius: 5px; 
+            transition: height 0.2s ease;
+        }
+        .progress-container:hover .progress-bar {
+            height: 6px; /* হোভার করলে বারটি মোটা হবে */
+        }
+        .progress-bar-filled { 
+            height: 100%; 
+            width: 0%; 
+            background-color: var(--theme-red); 
+            border-radius: 5px; 
+        }
 
-        .bottom-controls { display: flex; align-items: center; gap: 15px; color: #fff; }
+        .bottom-controls { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            color: #fff; 
+        }
 
         .controls-btn { background: none; border: none; cursor: pointer; padding: 5px; display: flex; }
         .controls-btn svg { width: 24px; height: 24px; fill: #fff; transition: transform 0.2s ease; }
@@ -124,6 +147,7 @@
         </button>
         <video id="videoPlayer"></video>
         <div class="overlay controls-container">
+            <!-- লেআউট এখন সঠিক -->
             <div class="progress-container" id="progressContainer">
                 <div class="progress-bar"><div class="progress-bar-filled" id="progressFilled"></div></div>
             </div>
@@ -172,7 +196,7 @@
             const isPaused = video.paused;
             playIcon.style.display = isPaused ? 'block' : 'none';
             pauseIcon.style.display = isPaused ? 'none' : 'block';
-            bigPlayButton.style.display = isPaused ? 'flex' : 'none'; // <-- এটিই মূল সমাধান
+            bigPlayButton.style.display = isPaused ? 'flex' : 'none';
         }
 
         function updateProgress() {
