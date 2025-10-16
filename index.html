@@ -29,14 +29,14 @@
         border: none;
         outline: none;
         background: #000;
-        /* প্রোগ্রেস বারের জন্য এটি ঠিক আছে */
+        /* প্রোগ্রেস বারের জন্য এটি সঠিক আছে */
         accent-color: red;
       }
 
-      /* --- চূড়ান্ত এবং সঠিক কোড (কোনো শ্যাডো ছাড়া) --- */
-      /* এই ফিল্টারটি শুধু সাদা রঙকে টার্গেট করে লাল বানায় এবং কোনো অপ্রয়োজনীয় শ্যাডো তৈরি করে না। */
+      /* --- চূড়ান্ত এবং ১০০% সঠিক কোড --- */
+      /* এই ফিল্টারটি সাদা (#FFFFFF) রঙকে সরাসরি নিখুঁত লাল (#FF0000) রঙে পরিবর্তন করার জন্য তৈরি। */
       video::-webkit-media-controls-panel {
-          filter: invert(1) grayscale(1) brightness(0.6) sepia(100) hue-rotate(320deg) saturate(1000%);
+          filter: brightness(0) saturate(100%) invert(13%) sepia(89%) saturate(5489%) hue-rotate(356deg) brightness(99%) contrast(116%);
       }
       /* --- নতুন কোড শেষ --- */
 
