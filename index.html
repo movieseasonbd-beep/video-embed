@@ -29,8 +29,11 @@
         border: none;
         outline: none;
         background: #000;
-        /* এই লাইনটি ভিডিওর প্রোগ্রেস বার লাল করার জন্য যোগ করা হয়েছে */
+        
+        /* --- এই অংশটি আপনার অনুরোধ অনুযায়ী কাজ করছে --- */
+        /* এটি প্রোগ্রেস বারের পূর্ণ হওয়া অংশ এবং থাম্ব উভয়কেই লাল করে */
         accent-color: red;
+        /* ------------------------------------------- */
       }
       .message {
         text-align: center;
@@ -42,7 +45,6 @@
         left: 50%;
         transform: translate(-50%, -50%);
         border: 4px solid #444;
-        /* এই লাইনটি লোডারটিকে লাল করা হয়েছে */
         border-top: 4px solid red;
         border-radius: 50%;
         width: 40px;
@@ -53,8 +55,6 @@
         0% { transform: translate(-50%, -50%) rotate(0deg); }
         100% { transform: translate(-50%, -50%) rotate(360deg); }
       }
-      
-      /* নতুন লাল প্লে বাটনের জন্য CSS */
       #playButtonOverlay {
         position: absolute;
         top: 50%;
@@ -74,7 +74,7 @@
       #playButtonOverlay svg {
         width: 30px;
         height: 30px;
-        fill: red; /* প্লে বাটনের আইকনটি লাল করা হয়েছে */
+        fill: red;
       }
       #playButtonOverlay.hidden {
         opacity: 0;
@@ -85,7 +85,6 @@
   <body>
     <div id="playerContainer">
       <div class="loader" id="loader"></div>
-      <!-- নতুন প্লে বাটন এখানে যোগ করা হয়েছে -->
       <div id="playButtonOverlay" class="hidden">
         <svg viewBox="0 0 24 24">
           <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
@@ -126,14 +125,15 @@
         video.addEventListener("canplay", () => {
           loader.remove();
           video.style.display = "block";
-          playButton.classList.remove("hidden");
+          if (video.paused) {
+            playButton.classList.remove("hidden");
+          }
         });
 
         video.addEventListener("timeupdate", () => {
           localStorage.setItem(videoProgressKey, video.currentTime);
         });
         
-        // প্লে বাটন এবং ভিডিওর জন্য নতুন ইভেন্ট লিসেনার
         playButton.addEventListener("click", () => {
           video.play();
         });
