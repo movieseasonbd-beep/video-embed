@@ -33,10 +33,10 @@
         accent-color: red;
       }
 
-      /* --- নতুন এবং সঠিক কোড --- */
-      /* এই ফিল্টারটি সাদা রঙকে সরাসরি লাল রঙে পরিবর্তন করবে, কোনো হলুদ আভা ছাড়াই। */
+      /* --- চূড়ান্ত এবং সঠিক কোড (কোনো শ্যাডো ছাড়া) --- */
+      /* এই ফিল্টারটি শুধু সাদা রঙকে টার্গেট করে লাল বানায় এবং কোনো অপ্রয়োজনীয় শ্যাডো তৈরি করে না। */
       video::-webkit-media-controls-panel {
-          filter: brightness(0) saturate(100%) invert(16%) sepia(99%) saturate(7441%) hue-rotate(359deg) brightness(100%) contrast(106%);
+          filter: invert(1) grayscale(1) brightness(0.6) sepia(100) hue-rotate(320deg) saturate(1000%);
       }
       /* --- নতুন কোড শেষ --- */
 
