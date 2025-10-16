@@ -70,6 +70,8 @@
         const video = document.createElement("video");
         video.setAttribute("controls", "");
         video.setAttribute("autoplay", "");
+        // দ্রুত লোডের জন্য preload="metadata" ব্যবহার করা হয়েছে
+        video.setAttribute("preload", "metadata");
         video.innerHTML = "Your browser doesn't support HTML5 video.";
         video.style.display = "none";
 
@@ -79,10 +81,27 @@
         video.appendChild(source);
         container.appendChild(video);
 
+        // দেখা শেষ করার সময় মনে রাখার জন্য কী (key) তৈরি
+        const videoProgressKey = `video_progress_${videoUrl}`;
+
+        // যখন ভিডিও প্লে হওয়ার জন্য প্রস্তুত হবে
+        video.addEventListener("loadedmetadata", () => {
+          const savedTime = localStorage.getItem(videoProgressKey);
+          if (savedTime) {
+            video.currentTime = parseFloat(savedTime);
+          }
+        });
+
         video.addEventListener("canplay", () => {
           loader.remove();
           video.style.display = "block";
         });
+
+        // ভিডিও চলার সময় প্রতি সেকেন্ডে বর্তমান সময় localStorage-এ সেভ হবে
+        video.addEventListener("timeupdate", () => {
+          localStorage.setItem(videoProgressKey, video.currentTime);
+        });
+
       } else {
         loader.remove();
         container.innerHTML = "<p class='message'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
