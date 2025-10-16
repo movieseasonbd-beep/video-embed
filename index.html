@@ -1,123 +1,111 @@
 <!DOCTYPE html>
 <html lang="bn">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MovieSeason Video Player</title>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: #fff;
+        font-family: Arial, sans-serif;
+      }
+      #playerContainer {
+        width: 100%;
+        max-width: 900px;
+        position: relative;
+        background: #000;
+        aspect-ratio: 16 / 9;
+      }
+      video {
+        width: 100%;
+        height: 100%;
+        border: none;
+        outline: none;
+        background: #000;
+        /* এই লাইনটি ভিডিওর প্রোগ্রেস বার লাল করার জন্য যোগ করা হয়েছে */
+        accent-color: red;
+      }
+      .message {
+        text-align: center;
+        color: #888;
+      }
+      .loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: 4px solid #444;
+        /* এই লাইনটি লোডারটিকে লাল করা হয়েছে */
+        border-top: 4px solid red;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="playerContainer">
+      <div class="loader" id="loader"></div>
+    </div>
 
-  <!-- Plyr CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css" />
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const videoUrl = params.get("id");
+      const container = document.getElementById("playerContainer");
+      const loader = document.getElementById("loader");
 
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: Arial, sans-serif;
-      color: #fff;
-    }
+      if (videoUrl) {
+        const video = document.createElement("video");
+        video.setAttribute("controls", "");
+        video.setAttribute("autoplay", "");
+        // দ্রুত লোডের জন্য preload="metadata" ব্যবহার করা হয়েছে
+        video.setAttribute("preload", "metadata");
+        video.innerHTML = "Your browser doesn't support HTML5 video.";
+        video.style.display = "none";
 
-    #playerContainer {
-      width: 100%;
-      max-width: 900px;
-      aspect-ratio: 16 / 9;
-      position: relative;
-      background: #000;
-      overflow: hidden;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
-    }
+        const source = document.createElement("source");
+        source.src = videoUrl;
+        source.type = "video/mp4";
+        video.appendChild(source);
+        container.appendChild(video);
 
-    /* লোডার */
-    .loader {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      border: 4px solid #333;
-      border-top: 4px solid red;
-      border-radius: 50%;
-      width: 45px;
-      height: 45px;
-      animation: spin 1s linear infinite;
-      z-index: 10;
-    }
+        // দেখা শেষ করার সময় মনে রাখার জন্য কী (key) তৈরি
+        const videoProgressKey = video_progress_${videoUrl};
 
-    @keyframes spin {
-      0% { transform: translate(-50%, -50%) rotate(0deg); }
-      100% { transform: translate(-50%, -50%) rotate(360deg); }
-    }
+        // যখন ভিডিও প্লে হওয়ার জন্য প্রস্তুত হবে
+        video.addEventListener("loadedmetadata", () => {
+          const savedTime = localStorage.getItem(videoProgressKey);
+          if (savedTime) {
+            video.currentTime = parseFloat(savedTime);
+          }
+        });
 
-    /* progress bar color */
-    :root {
-      --plyr-color-main: #ff0000;
-    }
+        video.addEventListener("canplay", () => {
+          loader.remove();
+          video.style.display = "block";
+        });
 
-    .message {
-      text-align: center;
-      color: #aaa;
-    }
-  </style>
-</head>
-<body>
-  <div id="playerContainer">
-    <div class="loader" id="loader"></div>
-    <video id="player" playsinline controls preload="metadata"></video>
-  </div>
+        // ভিডিও চলার সময় প্রতি সেকেন্ডে বর্তমান সময় localStorage-এ সেভ হবে
+        video.addEventListener("timeupdate", () => {
+          localStorage.setItem(videoProgressKey, video.currentTime);
+        });
 
-  <!-- Plyr JS -->
-  <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.min.js"></script>
-
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const videoUrl = params.get("id");
-    const loader = document.getElementById("loader");
-    const playerElement = document.getElementById("player");
-
-    if (videoUrl) {
-      const source = document.createElement("source");
-      source.src = videoUrl;
-      source.type = "video/x-matroska"; // mkv support type
-      playerElement.appendChild(source);
-
-      const player = new Plyr(playerElement, {
-        autoplay: true,
-        controls: [
-          'play-large', 'play', 'progress', 'current-time', 'mute', 
-          'volume', 'settings', 'fullscreen'
-        ],
-      });
-
-      // loader remove when ready
-      player.on('ready', () => {
+      } else {
         loader.remove();
-        player.play().catch(() => {});
-      });
-
-      // ভিডিও দেখা যেখানে বন্ধ হয়েছিল সেটা localStorage-এ রাখা
-      const key = video_progress_${videoUrl};
-      player.on('timeupdate', () => {
-        localStorage.setItem(key, player.currentTime);
-      });
-      player.on('ready', () => {
-        const savedTime = localStorage.getItem(key);
-        if (savedTime) player.currentTime = parseFloat(savedTime);
-      });
-
-      player.on('error', () => {
-        loader.remove();
-        playerElement.remove();
-        document.getElementById("playerContainer").innerHTML = 
-          "<p class='message'>❌ ভিডিও লোড করা যায়নি!</p>";
-      });
-    } else {
-      loader.remove();
-      document.getElementById("playerContainer").innerHTML = 
-        "<p class='message'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
-    }
-  </script>
-</body>
+        container.innerHTML = "<p class='message'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
+      }
+    </script>
+  </body>
 </html>
