@@ -29,15 +29,14 @@
         border: none;
         outline: none;
         background: #000;
-        /* এই লাইনটি ভিডিওর প্রোগ্রেস বার এবং ভলিউম স্লাইডার লাল করার জন্য সঠিক আছে। */
+        /* প্রোগ্রেস বারের জন্য এটি ঠিক আছে */
         accent-color: red;
       }
 
-      /* --- নতুন যোগ করা কোড --- */
-      /* Webkit-ভিত্তিক ব্রাউজার (Chrome, Edge, Safari) এর জন্য কন্ট্রোলগুলোর সাদা আইকন (যেমন প্লে, ফুলস্ক্রিন) এবং টেক্সট লাল করার জন্য নিচের কোডটি যোগ করা হয়েছে। */
-      /* এটি CSS filter ব্যবহার করে সাদা রঙকে লালে পরিবর্তন করে। */
+      /* --- নতুন এবং সঠিক কোড --- */
+      /* এই ফিল্টারটি সাদা রঙকে সরাসরি লাল রঙে পরিবর্তন করবে, কোনো হলুদ আভা ছাড়াই। */
       video::-webkit-media-controls-panel {
-          filter: invert(10%) sepia(100%) saturate(5000%) hue-rotate(350deg) brightness(100%) contrast(150%);
+          filter: brightness(0) saturate(100%) invert(16%) sepia(99%) saturate(7441%) hue-rotate(359deg) brightness(100%) contrast(106%);
       }
       /* --- নতুন কোড শেষ --- */
 
@@ -51,7 +50,6 @@
         left: 50%;
         transform: translate(-50%, -50%);
         border: 4px solid #444;
-        /* এই লাইনটি লোডারটিকে লাল করা হয়েছে */
         border-top: 4px solid red;
         border-radius: 50%;
         width: 40px;
@@ -79,7 +77,6 @@
         const video = document.createElement("video");
         video.setAttribute("controls", "");
         video.setAttribute("autoplay", "");
-        // দ্রুত লোডের জন্য preload="metadata" ব্যবহার করা হয়েছে
         video.setAttribute("preload", "metadata");
         video.innerHTML = "Your browser doesn't support HTML5 video.";
         video.style.display = "none";
@@ -90,10 +87,8 @@
         video.appendChild(source);
         container.appendChild(video);
 
-        // দেখা শেষ করার সময় মনে রাখার জন্য কী (key) তৈরি
         const videoProgressKey = `video_progress_${videoUrl}`;
 
-        // যখন ভিডিও প্লে হওয়ার জন্য প্রস্তুত হবে
         video.addEventListener("loadedmetadata", () => {
           const savedTime = localStorage.getItem(videoProgressKey);
           if (savedTime) {
@@ -106,7 +101,6 @@
           video.style.display = "block";
         });
 
-        // ভিডিও চলার সময় প্রতি সেকেন্ডে বর্তমান সময় localStorage-এ সেভ হবে
         video.addEventListener("timeupdate", () => {
           localStorage.setItem(videoProgressKey, video.currentTime);
         });
