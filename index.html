@@ -1,154 +1,147 @@
 <!DOCTYPE html>
 <html lang="bn">
-  <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Updated Video Player</title>
+    <title>Direct Link Video Player</title>
     <style>
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        background: #111;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        color: #fff;
-        font-family: Arial, sans-serif;
-      }
-      #playerContainer {
-        width: 100%;
-        max-width: 900px;
-        position: relative;
-        background: #000;
-        aspect-ratio: 16 / 9;
-        overflow: hidden; /* To keep controls inside */
-      }
-      video {
-        width: 100%;
-        height: 100%;
-        border: none;
-        outline: none;
-        background: #000;
-      }
-      .message {
-        text-align: center;
-        color: #888;
-        padding: 20px;
-      }
-      .loader {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border: 4px solid #444;
-        border-top: 4px solid #fff;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin {
-        0% { transform: translate(-50%, -50%) rotate(0deg); }
-        100% { transform: translate(-50%, -50%) rotate(360deg); }
-      }
-
-      /* --- নতুন CSS কোড শুরু --- */
-      #customControls {
-        position: absolute;
-        bottom: 10px;
-        right: 15px;
-        z-index: 2147483647;
-        opacity: 0; /* Initially hidden */
-        transition: opacity 0.3s ease-in-out;
-        background: rgba(30, 30, 30, 0.7);
-        padding: 5px 8px;
-        border-radius: 6px;
-      }
-      #playerContainer:hover #customControls {
-        opacity: 1; /* Show on hover */
-      }
-      #playbackSpeed {
-        background: transparent;
-        color: #fff;
-        border: none;
-        outline: none;
-        font-size: 14px;
-      }
-      #playbackSpeed option {
-        background: #333;
-        border: none;
-      }
-      /* --- নতুন CSS কোড শেষ --- */
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        #playerContainer {
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+            background: #000;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            background: #000;
+        }
+        .message {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+        }
+        .loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 4px solid #444;
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        #customControls {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            z-index: 2147483647;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            background: rgba(30, 30, 30, 0.7);
+            padding: 5px 8px;
+            border-radius: 6px;
+        }
+        #playerContainer:hover #customControls {
+            opacity: 1;
+        }
+        #playbackSpeed {
+            background: transparent;
+            color: #fff;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+        #playbackSpeed option {
+            background: #333;
+            border: none;
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div id="playerContainer">
-      <div class="loader" id="loader"></div>
-      <!-- প্লেব্যাক স্পিড কন্ট্রোলের জন্য নতুন অংশ -->
-      <div id="customControls" style="display: none;">
-        <select id="playbackSpeed" title="Playback Speed">
-          <option value="0.5">0.5x</option>
-          <option value="0.75">0.75x</option>
-          <option value="1" selected>Normal</option>
-          <option value="1.5">1.5x</option>
-          <option value="2">2x</option>
-        </select>
-      </div>
+        <div class="loader" id="loader"></div>
+        <div id="customControls" style="display: none;">
+            <select id="playbackSpeed" title="Playback Speed">
+                <option value="0.5">0.5x</option>
+                <option value="0.75">0.75x</option>
+                <option value="1" selected>Normal</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2x</option>
+            </select>
+        </div>
     </div>
 
     <script>
-      const params = new URLSearchParams(window.location.search);
-      // আগের মতো পুরো লিংক না, এখন শুধু ভিডিওর নাম (extension ছাড়া) দিন
-      const videoBaseName = params.get("id");
-      const container = document.getElementById("playerContainer");
-      const loader = document.getElementById("loader");
-      const customControls = document.getElementById("customControls");
+        const params = new URLSearchParams(window.location.search);
+        // এখন এটি id থেকে পুরো ভিডিওর লিংক নিবে
+        const videoUrl = params.get("id"); 
+        const container = document.getElementById("playerContainer");
+        const loader = document.getElementById("loader");
+        const customControls = document.getElementById("customControls");
 
-      if (videoBaseName) {
-        const video = document.createElement("video");
-        video.setAttribute("controls", "");
-        video.setAttribute("autoplay", "");
-        video.innerHTML = "Your browser doesn't support HTML5 video.";
-        video.style.display = "none";
+        if (videoUrl) {
+            // সতর্কবার্তা: যদি লিংকটি .mkv হয়
+            if (videoUrl.toLowerCase().endsWith('.mkv')) {
+                console.warn("সতর্কতা: .mkv ফরম্যাট বেশিরভাগ ব্রাউজারে সাপোর্ট করে না। ভিডিওটি নাও চলতে পারে।");
+            }
 
-        // --- একাধিক ভিডিও ফরম্যাট সাপোর্ট ---
-        const formats = ["mp4", "webm", "ogv"]; // আপনার ভিডিওর যে ফরম্যাটগুলো আছে, সেগুলো যোগ করুন
-        formats.forEach(format => {
-          const source = document.createElement("source");
-          source.src = `${videoBaseName}.${format}`;
-          source.type = `video/${format}`;
-          video.appendChild(source);
-        });
-        
-        container.appendChild(video);
+            const video = document.createElement("video");
+            video.setAttribute("controls", "");
+            video.setAttribute("autoplay", "");
+            video.innerHTML = "Your browser doesn't support HTML5 video.";
+            video.style.display = "none";
 
-        // --- প্লেব্যাক স্পিড কন্ট্রোল ---
-        const playbackSpeedSelector = document.getElementById("playbackSpeed");
-        playbackSpeedSelector.addEventListener("change", (event) => {
-          video.playbackRate = parseFloat(event.target.value);
-        });
+            // একটিমাত্র সোর্স ট্যাগ তৈরি করা হচ্ছে সরাসরি লিংক দিয়ে
+            const source = document.createElement("source");
+            source.src = videoUrl;
+            // type নির্ধারণের প্রয়োজন নেই, ব্রাউজার নিজে থেকে চেষ্টা করবে
+            video.appendChild(source);
+            
+            container.appendChild(video);
 
-        video.addEventListener("canplay", () => {
-          loader.remove();
-          video.style.display = "block";
-          customControls.style.display = "block"; // কন্ট্রোলস দৃশ্যমান করুন
-        });
+            const playbackSpeedSelector = document.getElementById("playbackSpeed");
+            playbackSpeedSelector.addEventListener("change", (event) => {
+                video.playbackRate = parseFloat(event.target.value);
+            });
 
-        // ভিডিও খুঁজে না পেলে বা লোড না হলে এরর মেসেজ দেখানোর জন্য
-        video.addEventListener("error", (e) => {
-            // Check if any source loaded successfully
-            if (video.networkState === video.NETWORK_NO_SOURCE) {
+            video.addEventListener("canplay", () => {
+                loader.remove();
+                video.style.display = "block";
+                customControls.style.display = "block";
+            });
+
+            video.addEventListener("error", () => {
                 loader.remove();
                 customControls.remove();
-                container.innerHTML = "<p class='message'>❌ ভিডিও ফাইল খুঁজে পাওয়া যায়নি বা ফরম্যাট সাপোর্ট করছে না।</p>";
-            }
-        });
+                container.innerHTML = "<p class='message'>❌ ভিডিওটি লোড করা যায়নি। লিংকটি সঠিক কিনা অথবা ভিডিও ফরম্যাটটি (`.mp4`, `.webm`) ব্রাউজার সাপোর্ট করে কিনা তা পরীক্ষা করুন।</p>";
+            });
 
-      } else {
-        loader.remove();
-        container.innerHTML = "<p class='message'>❌ URL-এ কোনো ভিডিও আইডি (id) পাওয়া যায়নি!</p>";
-      }
+        } else {
+            loader.remove();
+            container.innerHTML = "<p class='message'>❌ URL-এ কোনো ভিডিও আইডি (id) পাওয়া যায়নি!</p>";
+        }
     </script>
-  </body>
+</body>
 </html>
