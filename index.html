@@ -22,7 +22,11 @@
         position: relative;
         background: #000;
         aspect-ratio: 16 / 9;
-        cursor: pointer;
+        
+        /* থিমটিকে আরও ফুটিয়ে তোলার জন্য প্লেয়ারের চারপাশে একটি লাল আভা যোগ করা হয়েছে */
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+        border: 1px solid #333;
+        border-radius: 5px;
       }
       video {
         width: 100%;
@@ -30,25 +34,11 @@
         border: none;
         outline: none;
         background: #000;
-      }
-      
-      /* --- এই নতুন CSS কোডটি প্রোগ্রেস বারকে লাল করার জন্য যোগ করা হয়েছে --- */
-      /* Chrome, Edge, Safari ব্রাউজারের জন্য */
-      video::-webkit-media-controls-progress-bar {
-        background-color: #555; /* বারের খালি অংশ */
-      }
-      video::-webkit-media-controls-play-button,
-      video::-webkit-media-controls-timeline {
-        background-color: red; /* প্লে হওয়া অংশ লাল */
-        border-radius: 25px;
-        color: red;
-      }
-      /* Firefox ব্রাউজারের জন্য */
-      video::-moz-progress-bar {
-        background: red !important;
-      }
-      /* ------------------------------------------------------------------- */
+        border-radius: 5px; /* কন্টেইনারের সাথে মিলিয়ে বর্ডার রেডিয়াস দেওয়া হলো */
 
+        /* এই লাইনটি প্রোগ্রেস বার এবং ভলিউম বারের সাদা অংশগুলোকে লাল করে */
+        accent-color: red;
+      }
       .message {
         text-align: center;
         color: #888;
@@ -69,40 +59,11 @@
         0% { transform: translate(-50%, -50%) rotate(0deg); }
         100% { transform: translate(-50%, -50%) rotate(360deg); }
       }
-      #playButtonOverlay {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 70px;
-        height: 70px;
-        background-color: rgba(0, 0, 0, 0.6);
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10;
-        transition: opacity 0.2s ease;
-        pointer-events: none; 
-      }
-      #playButtonOverlay svg {
-        width: 30px;
-        height: 30px;
-        fill: red;
-      }
-      #playButtonOverlay.hidden {
-        opacity: 0;
-      }
     </style>
   </head>
   <body>
     <div id="playerContainer">
       <div class="loader" id="loader"></div>
-      <div id="playButtonOverlay" class="hidden">
-        <svg viewBox="0 0 24 24">
-          <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
-        </svg>
-      </div>
     </div>
 
     <script>
@@ -110,10 +71,11 @@
       const videoUrl = params.get("id");
       const container = document.getElementById("playerContainer");
       const loader = document.getElementById("loader");
-      const playButton = document.getElementById("playButtonOverlay");
 
       if (videoUrl) {
         const video = document.createElement("video");
+        video.setAttribute("controls", "");
+        video.setAttribute("autoplay", "");
         video.setAttribute("preload", "metadata");
         video.innerHTML = "Your browser doesn't support HTML5 video.";
         video.style.display = "none";
@@ -136,30 +98,10 @@
         video.addEventListener("canplay", () => {
           loader.remove();
           video.style.display = "block";
-          playButton.classList.remove("hidden");
         });
 
         video.addEventListener("timeupdate", () => {
           localStorage.setItem(videoProgressKey, video.currentTime);
-        });
-        
-        function togglePlay() {
-          if (video.paused) {
-            video.play();
-          } else {
-            video.pause();
-          }
-        }
-        
-        container.addEventListener("click", togglePlay);
-        
-        video.addEventListener("play", () => {
-          playButton.classList.add("hidden");
-          video.setAttribute("controls", "true");
-        });
-        
-        video.addEventListener("pause", () => {
-          playButton.classList.remove("hidden");
         });
 
       } else {
