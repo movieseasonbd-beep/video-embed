@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Player</title>
     <style>
-      * { 
-        box-sizing: border-box; 
-      }
-
+      * { box-sizing: border-box; }
       body {
         margin: 0;
         background: #000;
@@ -19,7 +16,6 @@
         color: #fff;
         font-family: Arial, sans-serif;
       }
-
       #playerContainer {
         width: 100%;
         max-width: 900px;
@@ -27,44 +23,30 @@
         background: #000;
         aspect-ratio: 16 / 9;
       }
-
       video {
         width: 100%;
         height: 100%;
         border: none;
         outline: none;
         background: #000;
-        /* --- নতুন CSS কোড --- */
-        /* আধুনিক ব্রাউজারে প্রোগ্রেস বার এবং ভলিউম স্লাইডারের রঙ লাল করার জন্য */
-        accent-color: red !important;
       }
-      
-      /* WebKit ব্রাউজারের (Chrome, Edge) আইকনগুলোকে লাল করার জন্য শক্তিশালী ফিল্টার */
-      video::-webkit-media-controls-play-button,
-      video::-webkit-media-controls-mute-button,
-      video::-webkit-media-controls-fullscreen-button {
-          /* এই CSS ফিল্টারটি সাদা বা ধূসর রঙের আইকনকে লাল রঙে পরিবর্তন করার চেষ্টা করে */
-          filter: brightness(0) saturate(100%) invert(15%) sepia(100%) saturate(5000%) hue-rotate(350deg);
-      }
-
       .message {
         text-align: center;
         color: #888;
       }
-
       .loader {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         border: 4px solid #444;
-        border-top: 4px solid #fff;
+        /* এই লাইনটি পরিবর্তন করে লোডারটিকে লাল করা হয়েছে */
+        border-top: 4px solid red;
         border-radius: 50%;
         width: 40px;
         height: 40px;
         animation: spin 1s linear infinite;
       }
-
       @keyframes spin {
         0% { transform: translate(-50%, -50%) rotate(0deg); }
         100% { transform: translate(-50%, -50%) rotate(360deg); }
@@ -99,22 +81,6 @@
           loader.remove();
           video.style.display = "block";
         });
-
-        // ভিডিওর বর্তমান সময় localStorage-এ সেভ করা
-        video.addEventListener("timeupdate", () => {
-          if (video.currentTime > 5) {
-            localStorage.setItem(videoUrl, video.currentTime);
-          }
-        });
-
-        // ভিডিও লোড হওয়ার সময় সেভ করা সময় থেকে চালু করা
-        video.addEventListener("loadedmetadata", () => {
-          const savedTime = localStorage.getItem(videoUrl);
-          if (savedTime) {
-            video.currentTime = parseFloat(savedTime);
-          }
-        });
-
       } else {
         loader.remove();
         container.innerHTML = "<p class='message'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
