@@ -1,111 +1,109 @@
 <!DOCTYPE html>
 <html lang="bn">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player</title>
-    <style>
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        background: #000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        color: #fff;
-        font-family: Arial, sans-serif;
-      }
-      #playerContainer {
-        width: 100%;
-        max-width: 900px;
-        position: relative;
-        background: #000;
-        aspect-ratio: 16 / 9;
-      }
-      video {
-        width: 100%;
-        height: 100%;
-        border: none;
-        outline: none;
-        background: #000;
-        /* এই লাইনটি ভিডিওর প্রোগ্রেস বার লাল করার জন্য যোগ করা হয়েছে */
-        accent-color: red;
-      }
-      .message {
-        text-align: center;
-        color: #888;
-      }
-      .loader {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border: 4px solid #444;
-        /* এই লাইনটি লোডারটিকে লাল করা হয়েছে */
-        border-top: 4px solid red;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin {
-        0% { transform: translate(-50%, -50%) rotate(0deg); }
-        100% { transform: translate(-50%, -50%) rotate(360deg); }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="playerContainer">
-      <div class="loader" id="loader"></div>
-    </div>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Red Play Button with Progress Bar</title>
+<style>
+  body {
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    gap: 20px;
+  }
 
-    <script>
-      const params = new URLSearchParams(window.location.search);
-      const videoUrl = params.get("id");
-      const container = document.getElementById("playerContainer");
-      const loader = document.getElementById("loader");
+  .play-btn {
+    width: 80px;
+    height: 80px;
+    background: red; /* 🔴 লাল রঙ */
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+  }
 
-      if (videoUrl) {
-        const video = document.createElement("video");
-        video.setAttribute("controls", "");
-        video.setAttribute("autoplay", "");
-        // দ্রুত লোডের জন্য preload="metadata" ব্যবহার করা হয়েছে
-        video.setAttribute("preload", "metadata");
-        video.innerHTML = "Your browser doesn't support HTML5 video.";
-        video.style.display = "none";
+  .play-btn::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-35%, -50%);
+    width: 0;
+    height: 0;
+    border-left: 25px solid white;
+    border-top: 15px solid transparent;
+    border-bottom: 15px solid transparent;
+    transition: 0.3s;
+  }
 
-        const source = document.createElement("source");
-        source.src = videoUrl;
-        source.type = "video/mp4";
-        video.appendChild(source);
-        container.appendChild(video);
+  .play-btn.pause::before {
+    border: none;
+    width: 14px;
+    height: 30px;
+    background: white;
+    transform: translate(-50%, -50%);
+    box-shadow: 20px 0 white;
+  }
 
-        // দেখা শেষ করার সময় মনে রাখার জন্য কী (key) তৈরি
-        const videoProgressKey = `video_progress_${videoUrl}`;
+  .play-btn:hover {
+    background: #cc0000;
+    box-shadow: 0 0 25px rgba(255, 0, 0, 0.9);
+  }
 
-        // যখন ভিডিও প্লে হওয়ার জন্য প্রস্তুত হবে
-        video.addEventListener("loadedmetadata", () => {
-          const savedTime = localStorage.getItem(videoProgressKey);
-          if (savedTime) {
-            video.currentTime = parseFloat(savedTime);
+  /* Progress Bar */
+  .progress-container {
+    width: 300px;
+    height: 10px;
+    background: #333;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    width: 0%;
+    height: 100%;
+    background: red; /* 🔴 প্রগ্রেস বার লাল */
+    transition: width 0.1s linear;
+  }
+</style>
+</head>
+<body>
+
+  <div class="play-btn" id="playBtn"></div>
+
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <script>
+    const btn = document.getElementById("playBtn");
+    const progressBar = document.getElementById("progressBar");
+    let playing = false;
+    let progress = 0;
+    let interval;
+
+    btn.addEventListener("click", () => {
+      btn.classList.toggle("pause");
+      playing = !playing;
+
+      if (playing) {
+        interval = setInterval(() => {
+          if (progress < 100) {
+            progress++;
+            progressBar.style.width = progress + "%";
+          } else {
+            clearInterval(interval);
           }
-        });
-
-        video.addEventListener("canplay", () => {
-          loader.remove();
-          video.style.display = "block";
-        });
-
-        // ভিডিও চলার সময় প্রতি সেকেন্ডে বর্তমান সময় localStorage-এ সেভ হবে
-        video.addEventListener("timeupdate", () => {
-          localStorage.setItem(videoProgressKey, video.currentTime);
-        });
-
+        }, 100);
       } else {
-        loader.remove();
-        container.innerHTML = "<p class='message'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
+        clearInterval(interval);
       }
-    </script>
-  </body>
+    });
+  </script>
+
+</body>
 </html>
