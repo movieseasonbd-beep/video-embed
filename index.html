@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player</title>
+    <title>Updated Video Player</title>
     <style>
       * { box-sizing: border-box; }
       body {
         margin: 0;
-        background: #000;
+        background: #111;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -22,6 +22,7 @@
         position: relative;
         background: #000;
         aspect-ratio: 16 / 9;
+        overflow: hidden; /* To keep controls inside */
       }
       video {
         width: 100%;
@@ -33,6 +34,7 @@
       .message {
         text-align: center;
         color: #888;
+        padding: 20px;
       }
       .loader {
         position: absolute;
@@ -50,39 +52,102 @@
         0% { transform: translate(-50%, -50%) rotate(0deg); }
         100% { transform: translate(-50%, -50%) rotate(360deg); }
       }
+
+      /* --- নতুন CSS কোড শুরু --- */
+      #customControls {
+        position: absolute;
+        bottom: 10px;
+        right: 15px;
+        z-index: 2147483647;
+        opacity: 0; /* Initially hidden */
+        transition: opacity 0.3s ease-in-out;
+        background: rgba(30, 30, 30, 0.7);
+        padding: 5px 8px;
+        border-radius: 6px;
+      }
+      #playerContainer:hover #customControls {
+        opacity: 1; /* Show on hover */
+      }
+      #playbackSpeed {
+        background: transparent;
+        color: #fff;
+        border: none;
+        outline: none;
+        font-size: 14px;
+      }
+      #playbackSpeed option {
+        background: #333;
+        border: none;
+      }
+      /* --- নতুন CSS কোড শেষ --- */
     </style>
   </head>
   <body>
     <div id="playerContainer">
       <div class="loader" id="loader"></div>
+      <!-- প্লেব্যাক স্পিড কন্ট্রোলের জন্য নতুন অংশ -->
+      <div id="customControls" style="display: none;">
+        <select id="playbackSpeed" title="Playback Speed">
+          <option value="0.5">0.5x</option>
+          <option value="0.75">0.75x</option>
+          <option value="1" selected>Normal</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+        </select>
+      </div>
     </div>
 
     <script>
       const params = new URLSearchParams(window.location.search);
-      const videoUrl = params.get("id");
+      // আগের মতো পুরো লিংক না, এখন শুধু ভিডিওর নাম (extension ছাড়া) দিন
+      const videoBaseName = params.get("id");
       const container = document.getElementById("playerContainer");
       const loader = document.getElementById("loader");
+      const customControls = document.getElementById("customControls");
 
-      if (videoUrl) {
+      if (videoBaseName) {
         const video = document.createElement("video");
         video.setAttribute("controls", "");
         video.setAttribute("autoplay", "");
         video.innerHTML = "Your browser doesn't support HTML5 video.";
         video.style.display = "none";
 
-        const source = document.createElement("source");
-        source.src = videoUrl;
-        source.type = "video/mp4";
-        video.appendChild(source);
+        // --- একাধিক ভিডিও ফরম্যাট সাপোর্ট ---
+        const formats = ["mp4", "webm", "ogv"]; // আপনার ভিডিওর যে ফরম্যাটগুলো আছে, সেগুলো যোগ করুন
+        formats.forEach(format => {
+          const source = document.createElement("source");
+          source.src = `${videoBaseName}.${format}`;
+          source.type = `video/${format}`;
+          video.appendChild(source);
+        });
+        
         container.appendChild(video);
+
+        // --- প্লেব্যাক স্পিড কন্ট্রোল ---
+        const playbackSpeedSelector = document.getElementById("playbackSpeed");
+        playbackSpeedSelector.addEventListener("change", (event) => {
+          video.playbackRate = parseFloat(event.target.value);
+        });
 
         video.addEventListener("canplay", () => {
           loader.remove();
           video.style.display = "block";
+          customControls.style.display = "block"; // কন্ট্রোলস দৃশ্যমান করুন
         });
+
+        // ভিডিও খুঁজে না পেলে বা লোড না হলে এরর মেসেজ দেখানোর জন্য
+        video.addEventListener("error", (e) => {
+            // Check if any source loaded successfully
+            if (video.networkState === video.NETWORK_NO_SOURCE) {
+                loader.remove();
+                customControls.remove();
+                container.innerHTML = "<p class='message'>❌ ভিডিও ফাইল খুঁজে পাওয়া যায়নি বা ফরম্যাট সাপোর্ট করছে না।</p>";
+            }
+        });
+
       } else {
         loader.remove();
-        container.innerHTML = "<p class='message'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
+        container.innerHTML = "<p class='message'>❌ URL-এ কোনো ভিডিও আইডি (id) পাওয়া যায়নি!</p>";
       }
     </script>
   </body>
