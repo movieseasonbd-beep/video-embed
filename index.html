@@ -82,7 +82,7 @@
         container.appendChild(video);
 
         // দেখা শেষ করার সময় মনে রাখার জন্য কী (key) তৈরি
-        const videoProgressKey = video_progress_${videoUrl};
+        const videoProgressKey = `video_progress_${videoUrl}`;
 
         // যখন ভিডিও প্লে হওয়ার জন্য প্রস্তুত হবে
         video.addEventListener("loadedmetadata", () => {
