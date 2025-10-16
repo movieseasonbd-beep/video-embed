@@ -1,72 +1,124 @@
 <!DOCTYPE html>
 <html lang="bn">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom Video Player</title>
-    
-    <!-- 1. Plyr লাইব্রেরির CSS ফাইল যোগ করা -->
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-
+    <title>Video Player</title>
     <style>
-        body {
-            margin: 0;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+      * { 
+        box-sizing: border-box; 
+      }
 
-        #playerContainer {
-            width: 100%;
-            max-width: 900px;
-        }
+      body {
+        margin: 0;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: #fff;
+        font-family: Arial, sans-serif;
+      }
 
-        /* 2. Plyr প্লেয়ারের রঙ পরিবর্তন করার জন্য CSS */
-        :root {
-            --plyr-color-main: #ff0000; /* এখানে লাল রঙ সেট করা হয়েছে */
-        }
+      #playerContainer {
+        width: 100%;
+        max-width: 900px;
+        position: relative;
+        background: #000;
+        aspect-ratio: 16 / 9;
+      }
+
+      video {
+        width: 100%;
+        height: 100%;
+        border: none;
+        outline: none;
+        background: #000;
+        /* --- নতুন CSS কোড --- */
+        /* আধুনিক ব্রাউজারে প্রোগ্রেস বার এবং ভলিউম স্লাইডারের রঙ লাল করার জন্য */
+        accent-color: red !important;
+      }
+      
+      /* WebKit ব্রাউজারের (Chrome, Edge) আইকনগুলোকে লাল করার জন্য শক্তিশালী ফিল্টার */
+      video::-webkit-media-controls-play-button,
+      video::-webkit-media-controls-mute-button,
+      video::-webkit-media-controls-fullscreen-button {
+          /* এই CSS ফিল্টারটি সাদা বা ধূসর রঙের আইকনকে লাল রঙে পরিবর্তন করার চেষ্টা করে */
+          filter: brightness(0) saturate(100%) invert(15%) sepia(100%) saturate(5000%) hue-rotate(350deg);
+      }
+
+      .message {
+        text-align: center;
+        color: #888;
+      }
+
+      .loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: 4px solid #444;
+        border-top: 4px solid #fff;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="playerContainer">
-        <!-- ভিডিও ট্যাগটিকে Plyr ব্যবহারের জন্য প্রস্তুত করা -->
-        <video id="player" playsinline controls>
-            <!-- সোর্স ট্যাগটি JavaScript দিয়ে যোগ করা হবে -->
-        </video>
+      <div class="loader" id="loader"></div>
     </div>
 
-    <!-- 3. Plyr লাইব্রেরির JavaScript ফাইল যোগ করা -->
-    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const videoUrl = params.get("id");
-            const playerContainer = document.getElementById('playerContainer');
-            const videoElement = document.getElementById('player');
+      const params = new URLSearchParams(window.location.search);
+      const videoUrl = params.get("id");
+      const container = document.getElementById("playerContainer");
+      const loader = document.getElementById("loader");
 
-            if (videoUrl) {
-                // ভিডিওর সোর্স যোগ করা
-                const source = document.createElement('source');
-                source.src = videoUrl;
-                source.type = 'video/mp4';
-                videoElement.appendChild(source);
+      if (videoUrl) {
+        const video = document.createElement("video");
+        video.setAttribute("controls", "");
+        video.setAttribute("autoplay", "");
+        video.innerHTML = "Your browser doesn't support HTML5 video.";
+        video.style.display = "none";
 
-                // 4. Plyr প্লেয়ার চালু করা
-                const player = new Plyr('#player', {
-                    // এখানে বিভিন্ন অপশন যোগ করা যায়
-                    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
-                    storage: { enabled: true, key: 'plyr' } // ভিডিওর পজিশন মনে রাখার জন্য
-                });
+        const source = document.createElement("source");
+        source.src = videoUrl;
+        source.type = "video/mp4";
+        video.appendChild(source);
+        container.appendChild(video);
 
-                // ঐচ্ছিক: পেজ লোড হওয়ার সাথে সাথে প্লেয়ারটি দেখানোর জন্য
-                window.player = player;
-
-            } else {
-                playerContainer.innerHTML = "<p style='color: #888; text-align: center;'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
-            }
+        video.addEventListener("canplay", () => {
+          loader.remove();
+          video.style.display = "block";
         });
+
+        // ভিডিওর বর্তমান সময় localStorage-এ সেভ করা
+        video.addEventListener("timeupdate", () => {
+          if (video.currentTime > 5) {
+            localStorage.setItem(videoUrl, video.currentTime);
+          }
+        });
+
+        // ভিডিও লোড হওয়ার সময় সেভ করা সময় থেকে চালু করা
+        video.addEventListener("loadedmetadata", () => {
+          const savedTime = localStorage.getItem(videoUrl);
+          if (savedTime) {
+            video.currentTime = parseFloat(savedTime);
+          }
+        });
+
+      } else {
+        loader.remove();
+        container.innerHTML = "<p class='message'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
+      }
     </script>
-</body>
+  </body>
 </html>
