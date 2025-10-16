@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Video Player</title>
+    <title>Modern Red Player</title>
     <style>
         :root {
-            --theme-color: #E50914; /* প্রধান লাল রঙ */
+            --theme-red: #ff0000; /* প্রধান লাল রঙ */
         }
         * { box-sizing: border-box; }
         body {
@@ -16,7 +16,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
             overflow: hidden;
         }
         #playerContainer {
@@ -25,183 +25,146 @@
             position: relative;
             aspect-ratio: 16 / 9;
             background: #000;
-            box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
             color: #fff;
+            user-select: none;
         }
         video {
             width: 100%;
             height: 100%;
             border: none;
             outline: none;
-            background: #000;
         }
-        /* ডিফল্ট কন্ট্রোল পুরোপুরি লুকানো */
-        video::-webkit-media-controls {
-            display: none !important;
+        /* ডিফল্ট কন্ট্রোল সম্পূর্ণ লুকানো */
+        video::-webkit-media-controls { display: none !important; }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 5;
         }
-        .message {
-            text-align: center;
-            color: #aaa;
-            padding: 20px;
-            font-size: 1.1em;
-        }
+
         .loader {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            border: 4px solid #444;
-            border-top: 4px solid var(--theme-color);
+            border: 4px solid #555;
+            border-top: 4px solid var(--theme-red);
             border-radius: 50%;
             width: 50px; height: 50px;
             animation: spin 1s linear infinite;
             z-index: 20;
         }
-        @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
+        @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        /* বড় প্লে বাটন */
+        .big-play-button {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px; height: 80px;
+            background-color: var(--theme-red);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            border: 3px solid #000;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            transition: transform 0.2s ease;
+        }
+        .big-play-button:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        .big-play-button svg {
+            width: 40px; height: 40px;
+            fill: #fff;
+            padding-left: 5px;
         }
 
-        /* --- নতুন কন্ট্রোলের ডিজাইন --- */
+        /* কন্ট্রোল বার */
         .controls-container {
             position: absolute;
             bottom: 0; left: 0; right: 0;
-            padding: 10px;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 5px 15px;
+            background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
             opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-            z-index: 15;
+            visibility: hidden;
         }
         #playerContainer.active .controls-container {
             opacity: 1;
-        }
-        .controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .controls button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .controls button svg {
-            width: 24px; height: 24px;
-            fill: #fff;
-            transition: transform 0.2s ease;
-        }
-        .controls button:hover svg {
-            transform: scale(1.15);
-            fill: var(--theme-color);
+            visibility: visible;
         }
 
-        /* প্রোগ্রেস বার */
-        .progress-container {
+        .bottom-controls { display: flex; align-items: center; gap: 15px; }
+
+        .controls-btn { background: none; border: none; cursor: pointer; padding: 5px; display: flex; }
+        .controls-btn svg { width: 22px; height: 22px; fill: #fff; transition: transform 0.2s ease; }
+        .controls-btn:hover svg { transform: scale(1.1); }
+
+        .time-display { font-size: 14px; }
+        .right-controls { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+        
+        /* নতুন প্রোগ্রেস বার (Seek Bar) */
+        .seek-bar-container {
             width: 100%;
-            height: 12px;
+            padding: 5px 0;
             cursor: pointer;
-            padding: 4px 0;
         }
-        .progress-bar {
-            background-color: rgba(255, 255, 255, 0.3);
-            height: 4px;
+        input[type="range"].seek-bar {
+            -webkit-appearance: none;
             width: 100%;
-            position: relative;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.4);
             border-radius: 5px;
+            outline: none;
+            transition: height 0.2s ease;
         }
-        .progress-filled {
-            background-color: var(--theme-color);
-            height: 100%;
-            width: 0%;
-            border-radius: 5px;
-            position: relative;
-            transition: width 0.1s linear;
+        .seek-bar-container:hover input[type="range"].seek-bar {
+            height: 7px;
         }
-        .progress-filled::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translate(50%, -50%) scale(0);
-            width: 14px; height: 14px;
-            background-color: #fff;
-            border-radius: 50%;
-            transition: transform 0.2s ease;
-        }
-        .progress-container:hover .progress-filled::after {
-            transform: translate(50%, -50%) scale(1);
-        }
-
-        .time-display {
-            font-size: 14px;
-            user-select: none;
-        }
-        .right-controls {
-            margin-left: auto;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        /* ভলিউম কন্ট্রোল */
-        .volume-container {
-            display: flex;
-            align-items: center;
-        }
-        .volume-slider {
-            width: 0px;
-            height: 4px;
-            transition: width 0.3s ease-in-out;
-            cursor: pointer;
+        input[type="range"].seek-bar::-webkit-slider-thumb {
             -webkit-appearance: none;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 5px;
-            outline-color: var(--theme-color);
-        }
-        .volume-container:hover .volume-slider {
-            width: 80px;
-            margin-left: 8px;
-        }
-        .volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            background: #fff;
+            width: 16px;
+            height: 16px;
+            background: var(--theme-red);
             border-radius: 50%;
             cursor: pointer;
+            border: 2px solid #fff;
         }
+        
+        .message { text-align: center; color: #aaa; padding: 20px; font-size: 1.1em; }
+
     </style>
 </head>
 <body>
     <div id="playerContainer">
         <div class="loader" id="loader"></div>
+        
+        <div class="overlay big-play-button" id="bigPlayButton" style="display: none;">
+            <svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"/></svg>
+        </div>
+
         <video id="videoPlayer"></video>
         
-        <div class="controls-container">
-            <div class="progress-container" id="progressContainer">
-                <div class="progress-bar">
-                    <div class="progress-filled" id="progressFilled"></div>
-                </div>
+        <div class="overlay controls-container">
+            <div class="seek-bar-container">
+                <input type="range" class="seek-bar" id="seekBar" value="0" step="0.1">
             </div>
-            <div class="controls">
-                <button id="playPauseBtn">
+            <div class="bottom-controls">
+                <button class="controls-btn" id="playPauseBtn">
                     <svg id="playIcon" viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"/></svg>
                     <svg id="pauseIcon" viewBox="0 0 24 24" style="display: none;"><path d="M14,19H18V5H14M6,19H10V5H6V19Z"/></svg>
                 </button>
-                <div class="volume-container">
-                    <button id="volumeBtn">
-                        <svg id="volumeHighIcon" viewBox="0 0 24 24"><path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/></svg>
-                        <svg id="volumeMuteIcon" viewBox="0 0 24 24" style="display: none;"><path d="M12,4L7,9H3V15H7L12,20V4M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M19,12C19,15.17 16.89,17.85 14,18.71V20.77C18,19.86 21,16.28 21,7.72C18,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12Z"/></svg>
-                    </button>
-                    <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.05" value="1">
-                </div>
                 <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
                 <div class="right-controls">
-                    <button id="fullscreenBtn">
-                        <svg viewBox="0 0 24 24"><path d="M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M7,17H10V19H5V14H7V17Z"/></svg>
+                    <button class="controls-btn" id="pipBtn" title="Picture-in-Picture">
+                        <svg viewBox="0 0 24 24"><path d="M19,11H11V17H19V11M17,15H13V13H17V15M21,3H3A2,2 0 0,0 1,5V19A2,2 0 0,0 3,21H21A2,2 0 0,0 23,19V5A2,2 0 0,0 21,3M21,19H3V5H21V19Z"/></svg>
+                    </button>
+                    <button class="controls-btn" id="fullscreenBtn" title="Fullscreen">
+                        <svg id="fullscreenOpen" viewBox="0 0 24 24"><path d="M5,5H10V7H7V10H5V5M14,5H19V10H17V7H14V5M17,14H19V19H14V17H17V14M7,17H10V19H5V14H7V17Z"/></svg>
+                        <svg id="fullscreenExit" viewBox="0 0 24 24" style="display: none;"><path d="M14,14H19V16H16V19H14V14M5,14H10V19H8V16H5V14M8,5H10V10H5V8H8V5M19,8V10H14V5H16V8H19Z"/></svg>
                     </button>
                 </div>
             </div>
@@ -209,26 +172,25 @@
     </div>
 
     <script>
+        // DOM Elements
         const playerContainer = document.getElementById('playerContainer');
         const video = document.getElementById('videoPlayer');
         const loader = document.getElementById('loader');
-
+        const bigPlayButton = document.getElementById('bigPlayButton');
+        
         const playPauseBtn = document.getElementById('playPauseBtn');
         const playIcon = document.getElementById('playIcon');
         const pauseIcon = document.getElementById('pauseIcon');
         
-        const progressContainer = document.getElementById('progressContainer');
-        const progressFilled = document.getElementById('progressFilled');
+        const seekBar = document.getElementById('seekBar');
         const timeDisplay = document.getElementById('timeDisplay');
-
-        const volumeBtn = document.getElementById('volumeBtn');
-        const volumeHighIcon = document.getElementById('volumeHighIcon');
-        const volumeMuteIcon = document.getElementById('volumeMuteIcon');
-        const volumeSlider = document.getElementById('volumeSlider');
         
+        const pipBtn = document.getElementById('pipBtn');
         const fullscreenBtn = document.getElementById('fullscreenBtn');
-
-        // URL থেকে প্যারামিটার নেওয়া
+        const fullscreenOpen = document.getElementById('fullscreenOpen');
+        const fullscreenExit = document.getElementById('fullscreenExit');
+        
+        // Get URL Params
         const params = new URLSearchParams(window.location.search);
         const videoUrl = params.get("id");
         const posterUrl = params.get("poster");
@@ -238,89 +200,68 @@
             video.src = videoUrl;
         } else {
             loader.style.display = 'none';
-            playerContainer.innerHTML = "<p class='message'>❌ URL-এ কোনো ভিডিও লিংক (id) পাওয়া যায়নি!</p>";
+            playerContainer.innerHTML = `<p class="message">❌ URL-এ কোনো ভিডিও লিংক (id) পাওয়া যায়নি!</p>`;
         }
 
-        // --- প্লেয়ারের কার্যকারিতা ---
-
-        // প্লে/পজ টগল
-        function togglePlay() {
-            if (video.paused) {
-                video.play();
-            } else {
-                video.pause();
-            }
-        }
+        // Functions
+        const togglePlay = () => video.paused ? video.play() : video.pause();
 
         function updatePlayPauseIcon() {
-            if (video.paused) {
-                playIcon.style.display = 'block';
-                pauseIcon.style.display = 'none';
-            } else {
-                playIcon.style.display = 'none';
-                pauseIcon.style.display = 'block';
-            }
+            const isPaused = video.paused;
+            playIcon.style.display = isPaused ? 'block' : 'none';
+            pauseIcon.style.display = isPaused ? 'none' : 'block';
+            bigPlayButton.style.display = isPaused ? 'flex' : 'none';
         }
 
-        // প্রোগ্রেস বার আপডেট
-        function updateProgress() {
+        function handleSeekBar() {
             const percentage = (video.currentTime / video.duration) * 100;
-            progressFilled.style.width = `${percentage}%`;
-            
-            const totalDuration = formatTime(video.duration);
-            const currentTime = formatTime(video.currentTime);
-            timeDisplay.textContent = `${currentTime} / ${totalDuration}`;
+            seekBar.value = percentage;
+            const color = `linear-gradient(90deg, var(--theme-red) ${percentage}%, rgba(255, 255, 255, 0.4) ${percentage}%)`;
+            seekBar.style.background = color;
         }
-        
-        // ভিডিও seek করা
-        function seek(e) {
-            const seekTime = (e.offsetX / progressContainer.clientWidth) * video.duration;
+
+        function seekVideo() {
+            const seekTime = (seekBar.value / 100) * video.duration;
             video.currentTime = seekTime;
         }
 
-        // সময় ফরম্যাট করা (00:00)
         function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            if (isNaN(seconds)) return '00:00';
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        
+        function updateTimeDisplay() {
+            timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
         }
 
-        // ভলিউম পরিবর্তন
-        function handleVolumeChange() {
-            video.volume = volumeSlider.value;
-            video.muted = volumeSlider.value === 0;
-        }
-
-        function updateVolumeIcon() {
-            if (video.muted || video.volume === 0) {
-                volumeHighIcon.style.display = 'none';
-                volumeMuteIcon.style.display = 'block';
-            } else {
-                volumeHighIcon.style.display = 'block';
-                volumeMuteIcon.style.display = 'none';
+        async function togglePip() {
+            try {
+                if (video !== document.pictureInPictureElement) {
+                    await video.requestPictureInPicture();
+                } else {
+                    await document.exitPictureInPicture();
+                }
+            } catch (error) {
+                console.error("PiP Error:", error);
             }
         }
         
-        function toggleMute() {
-            video.muted = !video.muted;
-            if (video.muted) {
-                volumeSlider.value = 0;
-            } else {
-                volumeSlider.value = video.volume > 0 ? video.volume : 1;
-            }
-            updateVolumeIcon();
-        }
-
-        // ফুলস্ক্রিন টগল
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
-                playerContainer.requestFullscreen().catch(err => alert(`Fullscreen error: ${err.message}`));
+                playerContainer.requestFullscreen().catch(err => console.error(err));
             } else {
                 document.exitFullscreen();
             }
         }
 
-        // কন্ট্রোল অটো-হাইড
+        function updateFullscreenIcon() {
+            const isFullscreen = !!document.fullscreenElement;
+            fullscreenOpen.style.display = isFullscreen ? 'none' : 'block';
+            fullscreenExit.style.display = isFullscreen ? 'block' : 'none';
+        }
+        
         let controlsTimeout;
         function showControls() {
             playerContainer.classList.add('active');
@@ -332,36 +273,41 @@
             }, 3000);
         }
 
-        // --- ইভেন্ট লিসেনার যোগ করা ---
+        // Event Listeners
+        bigPlayButton.addEventListener('click', togglePlay);
         video.addEventListener('click', togglePlay);
         playPauseBtn.addEventListener('click', togglePlay);
+        
         video.addEventListener('play', updatePlayPauseIcon);
         video.addEventListener('pause', updatePlayPauseIcon);
-        video.addEventListener('timeupdate', updateProgress);
-        video.addEventListener('loadedmetadata', updateProgress);
         
-        progressContainer.addEventListener('click', seek);
+        video.addEventListener('timeupdate', () => {
+            handleSeekBar();
+            updateTimeDisplay();
+        });
+        video.addEventListener('loadedmetadata', updateTimeDisplay);
         
-        volumeSlider.addEventListener('input', handleVolumeChange);
-        volumeBtn.addEventListener('click', toggleMute);
-        video.addEventListener('volumechange', updateVolumeIcon);
-
+        seekBar.addEventListener('input', seekVideo);
+        
+        pipBtn.addEventListener('click', togglePip);
         fullscreenBtn.addEventListener('click', toggleFullscreen);
-
-        // কন্ট্রোল দেখানোর জন্য
+        document.addEventListener('fullscreenchange', updateFullscreenIcon);
+        
         playerContainer.addEventListener('mouseenter', showControls);
         playerContainer.addEventListener('mousemove', showControls);
         playerContainer.addEventListener('mouseleave', () => {
-             clearTimeout(controlsTimeout);
              if (!video.paused) playerContainer.classList.remove('active');
         });
-
-        // ভিডিও লোডিং ও এরর হ্যান্ডলিং
+        
         video.addEventListener('waiting', () => loader.style.display = 'block');
-        video.addEventListener('canplay', () => loader.style.display = 'none');
+        video.addEventListener('canplay', () => {
+            loader.style.display = 'none';
+            bigPlayButton.style.display = 'flex';
+        });
+
         video.addEventListener('error', () => {
             loader.style.display = 'none';
-            playerContainer.innerHTML = "<p class='message'>❌ ভিডিওটি লোড করা যায়নি।<br>লিংক অথবা ভিডিও ফরম্যাট (`.mp4`) সঠিক কিনা তা পরীক্ষা করুন।</p>";
+            playerContainer.innerHTML = `<p class="message">❌ ভিডিওটি লোড করা যায়নি।<br>লিংক অথবা ভিডিও ফরম্যাট (.mp4) সঠিক কিনা তা পরীক্ষা করুন।</p>`;
         });
 
     </script>
