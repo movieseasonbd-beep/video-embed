@@ -29,16 +29,11 @@
         border: none;
         outline: none;
         background: #000;
-        /* প্রোগ্রেস বারের জন্য এটি সঠিক আছে */
+        /* --- আপনার অনুরোধ অনুযায়ী, শুধুমাত্র এই একটি লাইন রাখা হয়েছে যা প্রোগ্রেস বার এবং ভলিউম স্লাইডারকে লাল করে --- */
         accent-color: red;
       }
 
-      /* --- চূড়ান্ত এবং ১০০% সঠিক কোড --- */
-      /* এই ফিল্টারটি সাদা (#FFFFFF) রঙকে সরাসরি নিখুঁত লাল (#FF0000) রঙে পরিবর্তন করার জন্য তৈরি। */
-      video::-webkit-media-controls-panel {
-          filter: brightness(0) saturate(100%) invert(13%) sepia(89%) saturate(5489%) hue-rotate(356deg) brightness(99%) contrast(116%);
-      }
-      /* --- নতুন কোড শেষ --- */
+      /* --- অন্য সব আইকন সাদা রাখার জন্য বাকি সব filter কোড মুছে ফেলা হয়েছে --- */
 
       .message {
         text-align: center;
