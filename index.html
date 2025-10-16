@@ -29,9 +29,18 @@
         border: none;
         outline: none;
         background: #000;
-        /* এই লাইনটি ভিডিওর প্রোগ্রেস বার লাল করার জন্য যোগ করা হয়েছে */
+        /* এই লাইনটি ভিডিওর প্রোগ্রেস বার এবং ভলিউম স্লাইডার লাল করার জন্য সঠিক আছে। */
         accent-color: red;
       }
+
+      /* --- নতুন যোগ করা কোড --- */
+      /* Webkit-ভিত্তিক ব্রাউজার (Chrome, Edge, Safari) এর জন্য কন্ট্রোলগুলোর সাদা আইকন (যেমন প্লে, ফুলস্ক্রিন) এবং টেক্সট লাল করার জন্য নিচের কোডটি যোগ করা হয়েছে। */
+      /* এটি CSS filter ব্যবহার করে সাদা রঙকে লালে পরিবর্তন করে। */
+      video::-webkit-media-controls-panel {
+          filter: invert(10%) sepia(100%) saturate(5000%) hue-rotate(350deg) brightness(100%) contrast(150%);
+      }
+      /* --- নতুন কোড শেষ --- */
+
       .message {
         text-align: center;
         color: #888;
@@ -52,25 +61,6 @@
       @keyframes spin {
         0% { transform: translate(-50%, -50%) rotate(0deg); }
         100% { transform: translate(-50%, -50%) rotate(360deg); }
-      }
-
-      /* Webkit ব্রাউজারের জন্য ভিডিও কন্ট্রোল স্টাইল */
-      video::-webkit-media-controls-panel {
-        background-color: rgba(0, 0, 0, 0.8);
-      }
-      video::-webkit-media-controls-play-button,
-      video::-webkit-media-controls-volume-slider,
-      video::-webkit-media-controls-fullscreen-button {
-        filter: brightness(1.5) grayscale(1) sepia(1) hue-rotate(-50deg);
-      }
-      video::-webkit-media-controls-timeline {
-        background-color: #555;
-        border-radius: 2px;
-        height: 4px;
-      }
-      video::-webkit-media-controls-current-time-display,
-      video::-webkit-media-controls-time-remaining-display {
-        color: #fff;
       }
     </style>
   </head>
