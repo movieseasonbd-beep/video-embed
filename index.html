@@ -29,22 +29,26 @@
         border: none;
         outline: none;
         background: #000;
-        /* accent-color কোডটি মুছে ফেলা হয়েছে কারণ এটি কাজ করছিল না। */
       }
 
-      /* --- শুধুমাত্র প্রোগ্রেস বার এবং হ্যান্ডেল লাল করার জন্য নতুন এবং কার্যকরী কোড --- */
-      
-      /* টার্গেট ১: প্রোগ্রেস বারের ভরাট হওয়া অংশটিকে (আগের সাদা অংশ) লাল করা হলো */
+      /* --- সব ব্রাউজারের জন্য নতুন এবং পূর্ণাঙ্গ কোড --- */
+
+      /* ১. Chrome, Safari, Edge, Opera ব্রাউজারের জন্য */
       video::-webkit-progress-value {
           background-color: red !important;
       }
-
-      /* টার্গেট ২: প্রোগ্রেস বারের গোলাকার হ্যান্ডেলটিকে (thumb) লাল করা হলো */
       video::-webkit-media-controls-timeline::-webkit-slider-thumb {
           background: red !important;
-          border: none;
-          box-shadow: none;
       }
+      
+      /* ২. Firefox ব্রাউজারের জন্য */
+      video::-moz-progress-bar {
+          background: red !important;
+      }
+      video::-moz-range-thumb {
+          background: red !important;
+      }
+      
       /* --- নতুন কোড শেষ --- */
 
       .message {
@@ -75,6 +79,7 @@
     </div>
 
     <script>
+      // Javascript কোডে কোনো পরিবর্তন করা হয়নি।
       const params = new URLSearchParams(window.location.search);
       const videoUrl = params.get("id");
       const container = document.getElementById("playerContainer");
