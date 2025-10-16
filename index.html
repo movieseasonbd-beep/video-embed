@@ -1,102 +1,49 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Custom Video Player</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MovieSeason Video Player</title>
+
+  <!-- Plyr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css" />
+
   <style>
-    * { box-sizing: border-box; }
     body {
       margin: 0;
       background: #000;
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      color: #fff;
       font-family: Arial, sans-serif;
+      color: #fff;
     }
 
     #playerContainer {
       width: 100%;
       max-width: 900px;
+      aspect-ratio: 16 / 9;
       position: relative;
       background: #000;
-      aspect-ratio: 16 / 9;
       overflow: hidden;
       border-radius: 10px;
-      box-shadow: 0 0 15px rgba(255,0,0,0.3);
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
     }
 
-    video {
-      width: 100%;
-      height: 100%;
-      display: block;
-      background: #000;
-      outline: none;
-    }
-
-    /* Progress bar (HTML5 native control) color */
-    video::-webkit-media-controls-timeline,
-    video::-webkit-media-controls-progress-bar {
-      accent-color: #ff0000 !important;
-    }
-
-    /* Custom Play button overlay */
-    .play-btn {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80px;
-      height: 80px;
-      background: rgba(255,255,255,0.1);
-      border: 3px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-    }
-
-    .play-btn:hover {
-      background: rgba(255,255,255,0.2);
-      transform: translate(-50%, -50%) scale(1.1);
-    }
-
-    .play-icon {
-      width: 0;
-      height: 0;
-      border-left: 25px solid #00ff6a;
-      border-top: 15px solid transparent;
-      border-bottom: 15px solid transparent;
-      margin-left: 5px;
-    }
-
-    .pause-icon {
-      display: flex;
-      gap: 6px;
-    }
-
-    .pause-icon span {
-      width: 8px;
-      height: 30px;
-      background: #fff;
-      border-radius: 2px;
-    }
-
+    /* লোডার */
     .loader {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      border: 4px solid #444;
+      border: 4px solid #333;
       border-top: 4px solid red;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 45px;
+      height: 45px;
       animation: spin 1s linear infinite;
+      z-index: 10;
     }
 
     @keyframes spin {
@@ -104,88 +51,72 @@
       100% { transform: translate(-50%, -50%) rotate(360deg); }
     }
 
+    /* progress bar color */
+    :root {
+      --plyr-color-main: #ff0000;
+    }
+
     .message {
       text-align: center;
-      color: #888;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
   <div id="playerContainer">
     <div class="loader" id="loader"></div>
+    <video id="player" playsinline controls preload="metadata"></video>
   </div>
+
+  <!-- Plyr JS -->
+  <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.min.js"></script>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const videoUrl = params.get("id");
-    const container = document.getElementById("playerContainer");
     const loader = document.getElementById("loader");
+    const playerElement = document.getElementById("player");
 
     if (videoUrl) {
-      const video = document.createElement("video");
-      video.setAttribute("preload", "metadata");
-      video.setAttribute("controls", "");
-      video.style.display = "none";
-
       const source = document.createElement("source");
       source.src = videoUrl;
-      source.type = "video/mp4";
-      video.appendChild(source);
-      container.appendChild(video);
+      source.type = "video/x-matroska"; // mkv support type
+      playerElement.appendChild(source);
 
-      // custom play button
-      const playBtn = document.createElement("div");
-      playBtn.className = "play-btn";
-      playBtn.innerHTML = <div class="play-icon"></div>;
-      container.appendChild(playBtn);
-
-      const videoProgressKey = video_progress_${videoUrl};
-
-      video.addEventListener("loadedmetadata", () => {
-        const savedTime = localStorage.getItem(videoProgressKey);
-        if (savedTime) video.currentTime = parseFloat(savedTime);
+      const player = new Plyr(playerElement, {
+        autoplay: true,
+        controls: [
+          'play-large', 'play', 'progress', 'current-time', 'mute', 
+          'volume', 'settings', 'fullscreen'
+        ],
       });
 
-      video.addEventListener("canplay", () => {
+      // loader remove when ready
+      player.on('ready', () => {
         loader.remove();
-        video.style.display = "block";
+        player.play().catch(() => {});
       });
 
-      video.addEventListener("timeupdate", () => {
-        localStorage.setItem(videoProgressKey, video.currentTime);
+      // ভিডিও দেখা যেখানে বন্ধ হয়েছিল সেটা localStorage-এ রাখা
+      const key = video_progress_${videoUrl};
+      player.on('timeupdate', () => {
+        localStorage.setItem(key, player.currentTime);
+      });
+      player.on('ready', () => {
+        const savedTime = localStorage.getItem(key);
+        if (savedTime) player.currentTime = parseFloat(savedTime);
       });
 
-      // Toggle play/pause
-      playBtn.addEventListener("click", () => {
-        if (video.paused) {
-          video.play();
-        } else {
-          video.pause();
-        }
-      });
-
-      video.addEventListener("play", () => {
-        playBtn.innerHTML = <div class="pause-icon"><span></span><span></span></div>;
-        playBtn.style.opacity = "0";
-        setTimeout(() => (playBtn.style.opacity = "0"), 400);
-      });
-
-      video.addEventListener("pause", () => {
-        playBtn.innerHTML = <div class="play-icon"></div>;
-        playBtn.style.opacity = "1";
-      });
-
-      // show button when mouse move
-      container.addEventListener("mousemove", () => {
-        playBtn.style.opacity = "1";
-        clearTimeout(window.hideBtnTimeout);
-        window.hideBtnTimeout = setTimeout(() => {
-          if (!video.paused) playBtn.style.opacity = "0";
-        }, 2000);
+      player.on('error', () => {
+        loader.remove();
+        playerElement.remove();
+        document.getElementById("playerContainer").innerHTML = 
+          "<p class='message'>❌ ভিডিও লোড করা যায়নি!</p>";
       });
     } else {
       loader.remove();
-      container.innerHTML = "<p class='message'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
+      document.getElementById("playerContainer").innerHTML = 
+        "<p class='message'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
     }
   </script>
 </body>
