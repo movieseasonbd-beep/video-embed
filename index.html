@@ -53,11 +53,44 @@
         0% { transform: translate(-50%, -50%) rotate(0deg); }
         100% { transform: translate(-50%, -50%) rotate(360deg); }
       }
+      
+      /* নতুন লাল প্লে বাটনের জন্য CSS */
+      #playButtonOverlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 70px;
+        height: 70px;
+        background-color: rgba(0, 0, 0, 0.6);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        z-index: 10;
+        transition: opacity 0.2s ease;
+      }
+      #playButtonOverlay svg {
+        width: 30px;
+        height: 30px;
+        fill: red; /* প্লে বাটনের আইকনটি লাল করা হয়েছে */
+      }
+      #playButtonOverlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
     </style>
   </head>
   <body>
     <div id="playerContainer">
       <div class="loader" id="loader"></div>
+      <!-- নতুন প্লে বাটন এখানে যোগ করা হয়েছে -->
+      <div id="playButtonOverlay" class="hidden">
+        <svg viewBox="0 0 24 24">
+          <path d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+        </svg>
+      </div>
     </div>
 
     <script>
@@ -65,12 +98,12 @@
       const videoUrl = params.get("id");
       const container = document.getElementById("playerContainer");
       const loader = document.getElementById("loader");
+      const playButton = document.getElementById("playButtonOverlay");
 
       if (videoUrl) {
         const video = document.createElement("video");
         video.setAttribute("controls", "");
         video.setAttribute("autoplay", "");
-        // দ্রুত লোডের জন্য preload="metadata" ব্যবহার করা হয়েছে
         video.setAttribute("preload", "metadata");
         video.innerHTML = "Your browser doesn't support HTML5 video.";
         video.style.display = "none";
@@ -81,10 +114,8 @@
         video.appendChild(source);
         container.appendChild(video);
 
-        // দেখা শেষ করার সময় মনে রাখার জন্য কী (key) তৈরি
         const videoProgressKey = `video_progress_${videoUrl}`;
 
-        // যখন ভিডিও প্লে হওয়ার জন্য প্রস্তুত হবে
         video.addEventListener("loadedmetadata", () => {
           const savedTime = localStorage.getItem(videoProgressKey);
           if (savedTime) {
@@ -95,11 +126,24 @@
         video.addEventListener("canplay", () => {
           loader.remove();
           video.style.display = "block";
+          playButton.classList.remove("hidden");
         });
 
-        // ভিডিও চলার সময় প্রতি সেকেন্ডে বর্তমান সময় localStorage-এ সেভ হবে
         video.addEventListener("timeupdate", () => {
           localStorage.setItem(videoProgressKey, video.currentTime);
+        });
+        
+        // প্লে বাটন এবং ভিডিওর জন্য নতুন ইভেন্ট লিসেনার
+        playButton.addEventListener("click", () => {
+          video.play();
+        });
+        
+        video.addEventListener("play", () => {
+          playButton.classList.add("hidden");
+        });
+        
+        video.addEventListener("pause", () => {
+          playButton.classList.remove("hidden");
         });
 
       } else {
