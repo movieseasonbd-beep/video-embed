@@ -22,6 +22,7 @@
         position: relative;
         background: #000;
         aspect-ratio: 16 / 9;
+        cursor: pointer;
       }
       video {
         width: 100%;
@@ -29,12 +30,25 @@
         border: none;
         outline: none;
         background: #000;
-        
-        /* --- এই অংশটি আপনার অনুরোধ অনুযায়ী কাজ করছে --- */
-        /* এটি প্রোগ্রেস বারের পূর্ণ হওয়া অংশ এবং থাম্ব উভয়কেই লাল করে */
-        accent-color: red;
-        /* ------------------------------------------- */
       }
+      
+      /* --- এই নতুন CSS কোডটি প্রোগ্রেস বারকে লাল করার জন্য যোগ করা হয়েছে --- */
+      /* Chrome, Edge, Safari ব্রাউজারের জন্য */
+      video::-webkit-media-controls-progress-bar {
+        background-color: #555; /* বারের খালি অংশ */
+      }
+      video::-webkit-media-controls-play-button,
+      video::-webkit-media-controls-timeline {
+        background-color: red; /* প্লে হওয়া অংশ লাল */
+        border-radius: 25px;
+        color: red;
+      }
+      /* Firefox ব্রাউজারের জন্য */
+      video::-moz-progress-bar {
+        background: red !important;
+      }
+      /* ------------------------------------------------------------------- */
+
       .message {
         text-align: center;
         color: #888;
@@ -67,9 +81,9 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        cursor: pointer;
         z-index: 10;
         transition: opacity 0.2s ease;
+        pointer-events: none; 
       }
       #playButtonOverlay svg {
         width: 30px;
@@ -78,7 +92,6 @@
       }
       #playButtonOverlay.hidden {
         opacity: 0;
-        pointer-events: none;
       }
     </style>
   </head>
@@ -101,8 +114,6 @@
 
       if (videoUrl) {
         const video = document.createElement("video");
-        video.setAttribute("controls", "");
-        video.setAttribute("autoplay", "");
         video.setAttribute("preload", "metadata");
         video.innerHTML = "Your browser doesn't support HTML5 video.";
         video.style.display = "none";
@@ -125,21 +136,26 @@
         video.addEventListener("canplay", () => {
           loader.remove();
           video.style.display = "block";
-          if (video.paused) {
-            playButton.classList.remove("hidden");
-          }
+          playButton.classList.remove("hidden");
         });
 
         video.addEventListener("timeupdate", () => {
           localStorage.setItem(videoProgressKey, video.currentTime);
         });
         
-        playButton.addEventListener("click", () => {
-          video.play();
-        });
+        function togglePlay() {
+          if (video.paused) {
+            video.play();
+          } else {
+            video.pause();
+          }
+        }
+        
+        container.addEventListener("click", togglePlay);
         
         video.addEventListener("play", () => {
           playButton.classList.add("hidden");
+          video.setAttribute("controls", "true");
         });
         
         video.addEventListener("pause", () => {
