@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Direct Link Video Player</title>
+    <title>Video Player with Poster</title>
     <style>
         * { box-sizing: border-box; }
         body {
             margin: 0;
-            background: #111;
+            background: #000;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             color: #fff;
             font-family: Arial, sans-serif;
+            overflow: hidden; /* To prevent scrollbars */
         }
         #playerContainer {
             width: 100%;
@@ -22,6 +23,7 @@
             position: relative;
             background: #000;
             aspect-ratio: 16 / 9;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.8); 
         }
         video {
             width: 100%;
@@ -32,8 +34,9 @@
         }
         .message {
             text-align: center;
-            color: #888;
+            color: #aaa;
             padding: 20px;
+            font-size: 1.1em;
         }
         .loader {
             position: absolute;
@@ -46,52 +49,110 @@
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
+            z-index: 20;
         }
         @keyframes spin {
             0% { transform: translate(-50%, -50%) rotate(0deg); }
             100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* --- সুন্দর প্লে-বাটনের জন্য CSS --- */
+        .play-button-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            display: none; /* শুরুতে লুকানো থাকবে */
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            z-index: 10;
+        }
+        .play-button-overlay:hover {
+            background-color: rgba(220, 50, 50, 0.8);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        .play-button-overlay svg {
+            width: 35px;
+            height: 35px;
+            fill: #fff;
+            padding-left: 5px; /* দেখতে সুন্দর করার জন্য */
         }
     </style>
 </head>
 <body>
     <div id="playerContainer">
         <div class="loader" id="loader"></div>
+        <!-- পোস্টারের উপরে দেখানোর জন্য প্লে বাটন -->
+        <div class="play-button-overlay" id="playButton">
+            <svg viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>
+        </div>
     </div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
-        // URL থেকে 'id' প্যারামিটারের সম্পূর্ণ ভ্যালু (লিংক) নেওয়া হচ্ছে
-        const videoUrl = params.get("id"); 
+        const videoUrl = params.get("id");
+        const posterUrl = params.get("poster"); 
+        
         const container = document.getElementById("playerContainer");
         const loader = document.getElementById("loader");
+        const playButton = document.getElementById("playButton");
 
         if (videoUrl) {
             const video = document.createElement("video");
             video.setAttribute("controls", "");
-            video.setAttribute("autoplay", "");
-            video.setAttribute("playsinline", ""); // iOS-এ ভালোভাবে চলার জন্য
-            video.innerHTML = "Your browser doesn't support HTML5 video.";
-            video.style.display = "none";
+            video.setAttribute("playsinline", "");
+            
+            // যদি পোস্টার লিংক থাকে, তবে তা যোগ করা হচ্ছে
+            if (posterUrl) {
+                video.setAttribute("poster", posterUrl);
+            }
 
-            // সরাসরি লিংকটি সোর্স হিসেবে ব্যবহার করা হচ্ছে
             const source = document.createElement("source");
             source.src = videoUrl;
             video.appendChild(source);
-            
             container.appendChild(video);
 
             video.addEventListener("canplay", () => {
-                loader.remove();
-                video.style.display = "block";
+                loader.style.display = "none";
+                // যদি ভিডিওটি autoplay না হয় এবং থেমে থাকে, তবে প্লে বাটন দেখাবে
+                if (video.paused) {
+                    playButton.style.display = "flex";
+                }
             });
 
+            // প্লে বাটনে ক্লিক করলে ভিডিও চলবে এবং বাটনটি লুকিয়ে যাবে
+            playButton.addEventListener("click", () => {
+                video.play();
+            });
+
+            // ভিডিও চলতে শুরু করলে প্লে বাটন লুকিয়ে যাবে
+            video.addEventListener("play", () => {
+                playButton.style.display = "none";
+            });
+
+            // ভিডিও পজ হলে প্লে বাটন আবার দেখা যাবে
+            video.addEventListener("pause", () => {
+                if (!video.ended) {
+                    playButton.style.display = "flex";
+                }
+            });
+
+            // ভিডিও লোড হতে ব্যর্থ হলে এরর মেসেজ দেখাবে
             video.addEventListener("error", () => {
-                loader.remove();
-                container.innerHTML = "<p class='message'>❌ ভিডিওটি লোড করা যায়নি। লিংকটি সঠিক কিনা অথবা ভিডিও ফরম্যাটটি ব্রাউজার সাপোর্ট করে কিনা তা পরীক্ষা করুন।</p>";
+                loader.style.display = "none";
+                playButton.style.display = "none";
+                container.innerHTML = "<p class='message'>❌ ভিডিওটি লোড করা যায়নি।<br>লিংক অথবা ভিডিও ফরম্যাট (`.mp4`) সঠিক কিনা তা পরীক্ষা করুন।</p>";
             });
 
         } else {
-            loader.remove();
+            loader.style.display = "none";
             container.innerHTML = "<p class='message'>❌ URL-এ কোনো ভিডিও লিংক (id) পাওয়া যায়নি!</p>";
         }
     </script>
