@@ -1,138 +1,192 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player</title>
-    <style>
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        background: #111; /* ছবির মতো ডার্ক ব্যাকগ্রাউন্ড */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        color: #fff;
-        font-family: Arial, sans-serif;
-      }
-      #playerContainer {
-        width: 100%;
-        max-width: 900px;
-        position: relative;
-        background: #000;
-        aspect-ratio: 16 / 9;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* সামান্য শ্যাডো ইফেক্ট */
-      }
-      video {
-        width: 100%;
-        height: 100%;
-        border: none;
-        outline: none;
-        background: #000;
-      }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Video Player</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
 
-      /* --- নতুন ডিজাইন এবং রঙের জন্য কোড --- */
+    #playerContainer {
+      width: 100%;
+      max-width: 900px;
+      position: relative;
+      background: #000;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(255,0,0,0.3);
+    }
 
-      /* ১. Chrome, Safari, Edge, Opera ব্রাউজারের জন্য */
-      video::-webkit-media-controls-timeline {
-          background-color: rgba(255, 255, 255, 0.2); /* টাইমলাইনের ব্যাকগ্রাউন্ড */
-          border-radius: 5px;
-          margin: 0 10px;
-      }
-      video::-webkit-progress-value {
-          background-color: #28a745 !important; /* সবুজ Progress Bar */
-          border-radius: 5px;
-      }
-      video::-webkit-media-controls-timeline::-webkit-slider-thumb {
-          background: #fff !important; /* স্লাইডার বাটন */
-          border-radius: 50%;
-          width: 12px;
-          height: 12px;
-      }
+    video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #000;
+      outline: none;
+    }
 
-      /* ২. Firefox ব্রাউজারের জন্য */
-      video::-moz-progress-bar {
-          background: #28a745 !important; /* সবুজ Progress Bar */
-      }
-      video::-moz-range-thumb {
-          background: #fff !important; /* স্লাইডার বাটন */
-          border: none;
-          border-radius: 50%;
-      }
-      
-      /* --- নতুন কোড শেষ --- */
+    /* Progress bar (HTML5 native control) color */
+    video::-webkit-media-controls-timeline,
+    video::-webkit-media-controls-progress-bar {
+      accent-color: #ff0000 !important;
+    }
 
-      .message {
-        text-align: center;
-        color: #888;
-      }
-      .loader {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border: 4px solid #444;
-        border-top: 4px solid #28a745; /* লোডারের রঙ পরিবর্তন করা হয়েছে */
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin {
-        0% { transform: translate(-50%, -50%) rotate(0deg); }
-        100% { transform: translate(-50%, -50%) rotate(360deg); }
-      }
-    </style>
+    /* Custom Play button overlay */
+    .play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.1);
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .play-btn:hover {
+      background: rgba(255,255,255,0.2);
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    .play-icon {
+      width: 0;
+      height: 0;
+      border-left: 25px solid #00ff6a;
+      border-top: 15px solid transparent;
+      border-bottom: 15px solid transparent;
+      margin-left: 5px;
+    }
+
+    .pause-icon {
+      display: flex;
+      gap: 6px;
+    }
+
+    .pause-icon span {
+      width: 8px;
+      height: 30px;
+      background: #fff;
+      border-radius: 2px;
+    }
+
+    .loader {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 4px solid #444;
+      border-top: 4px solid red;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .message {
+      text-align: center;
+      color: #888;
+    }
+  </style>
 </head>
 <body>
-    <div id="playerContainer">
-      <div class="loader" id="loader"></div>
-    </div>
+  <div id="playerContainer">
+    <div class="loader" id="loader"></div>
+  </div>
 
-    <script>
-      // Javascript কোডে কোনো পরিবর্তন করা হয়নি।
-      const params = new URLSearchParams(window.location.search);
-      const videoUrl = params.get("id");
-      const container = document.getElementById("playerContainer");
-      const loader = document.getElementById("loader");
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const videoUrl = params.get("id");
+    const container = document.getElementById("playerContainer");
+    const loader = document.getElementById("loader");
 
-      if (videoUrl) {
-        const video = document.createElement("video");
-        video.setAttribute("controls", "");
-        video.setAttribute("autoplay", "");
-        video.setAttribute("preload", "metadata");
-        video.innerHTML = "Your browser doesn't support HTML5 video.";
-        video.style.display = "none";
+    if (videoUrl) {
+      const video = document.createElement("video");
+      video.setAttribute("preload", "metadata");
+      video.setAttribute("controls", "");
+      video.style.display = "none";
 
-        const source = document.createElement("source");
-        source.src = videoUrl;
-        source.type = "video/mp4";
-        video.appendChild(source);
-        container.appendChild(video);
+      const source = document.createElement("source");
+      source.src = videoUrl;
+      source.type = "video/mp4";
+      video.appendChild(source);
+      container.appendChild(video);
 
-        const videoProgressKey = `video_progress_${videoUrl}`;
+      // custom play button
+      const playBtn = document.createElement("div");
+      playBtn.className = "play-btn";
+      playBtn.innerHTML = <div class="play-icon"></div>;
+      container.appendChild(playBtn);
 
-        video.addEventListener("loadedmetadata", () => {
-          const savedTime = localStorage.getItem(videoProgressKey);
-          if (savedTime) {
-            video.currentTime = parseFloat(savedTime);
-          }
-        });
+      const videoProgressKey = video_progress_${videoUrl};
 
-        video.addEventListener("canplay", () => {
-          loader.remove();
-          video.style.display = "block";
-        });
+      video.addEventListener("loadedmetadata", () => {
+        const savedTime = localStorage.getItem(videoProgressKey);
+        if (savedTime) video.currentTime = parseFloat(savedTime);
+      });
 
-        video.addEventListener("timeupdate", () => {
-          localStorage.setItem(videoProgressKey, video.currentTime);
-        });
-
-      } else {
+      video.addEventListener("canplay", () => {
         loader.remove();
-        container.innerHTML = "<p class='message'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
-      }
-    </script>
+        video.style.display = "block";
+      });
+
+      video.addEventListener("timeupdate", () => {
+        localStorage.setItem(videoProgressKey, video.currentTime);
+      });
+
+      // Toggle play/pause
+      playBtn.addEventListener("click", () => {
+        if (video.paused) {
+          video.play();
+        } else {
+          video.pause();
+        }
+      });
+
+      video.addEventListener("play", () => {
+        playBtn.innerHTML = <div class="pause-icon"><span></span><span></span></div>;
+        playBtn.style.opacity = "0";
+        setTimeout(() => (playBtn.style.opacity = "0"), 400);
+      });
+
+      video.addEventListener("pause", () => {
+        playBtn.innerHTML = <div class="play-icon"></div>;
+        playBtn.style.opacity = "1";
+      });
+
+      // show button when mouse move
+      container.addEventListener("mousemove", () => {
+        playBtn.style.opacity = "1";
+        clearTimeout(window.hideBtnTimeout);
+        window.hideBtnTimeout = setTimeout(() => {
+          if (!video.paused) playBtn.style.opacity = "0";
+        }, 2000);
+      });
+    } else {
+      loader.remove();
+      container.innerHTML = "<p class='message'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
+    }
+  </script>
 </body>
 </html>
