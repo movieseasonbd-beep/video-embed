@@ -22,11 +22,6 @@
         position: relative;
         background: #000;
         aspect-ratio: 16 / 9;
-        
-        /* থিমটিকে আরও ফুটিয়ে তোলার জন্য প্লেয়ারের চারপাশে একটি লাল আভা যোগ করা হয়েছে */
-        box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
-        border: 1px solid #333;
-        border-radius: 5px;
       }
       video {
         width: 100%;
@@ -34,9 +29,7 @@
         border: none;
         outline: none;
         background: #000;
-        border-radius: 5px; /* কন্টেইনারের সাথে মিলিয়ে বর্ডার রেডিয়াস দেওয়া হলো */
-
-        /* এই লাইনটি প্রোগ্রেস বার এবং ভলিউম বারের সাদা অংশগুলোকে লাল করে */
+        /* এই লাইনটি ভিডিওর প্রোগ্রেস বার লাল করার জন্য যোগ করা হয়েছে */
         accent-color: red;
       }
       .message {
@@ -49,6 +42,7 @@
         left: 50%;
         transform: translate(-50%, -50%);
         border: 4px solid #444;
+        /* এই লাইনটি লোডারটিকে লাল করা হয়েছে */
         border-top: 4px solid red;
         border-radius: 50%;
         width: 40px;
@@ -58,6 +52,25 @@
       @keyframes spin {
         0% { transform: translate(-50%, -50%) rotate(0deg); }
         100% { transform: translate(-50%, -50%) rotate(360deg); }
+      }
+
+      /* Webkit ব্রাউজারের জন্য ভিডিও কন্ট্রোল স্টাইল */
+      video::-webkit-media-controls-panel {
+        background-color: rgba(0, 0, 0, 0.8);
+      }
+      video::-webkit-media-controls-play-button,
+      video::-webkit-media-controls-volume-slider,
+      video::-webkit-media-controls-fullscreen-button {
+        filter: brightness(1.5) grayscale(1) sepia(1) hue-rotate(-50deg);
+      }
+      video::-webkit-media-controls-timeline {
+        background-color: #555;
+        border-radius: 2px;
+        height: 4px;
+      }
+      video::-webkit-media-controls-current-time-display,
+      video::-webkit-media-controls-time-remaining-display {
+        color: #fff;
       }
     </style>
   </head>
@@ -76,6 +89,7 @@
         const video = document.createElement("video");
         video.setAttribute("controls", "");
         video.setAttribute("autoplay", "");
+        // দ্রুত লোডের জন্য preload="metadata" ব্যবহার করা হয়েছে
         video.setAttribute("preload", "metadata");
         video.innerHTML = "Your browser doesn't support HTML5 video.";
         video.style.display = "none";
@@ -86,8 +100,10 @@
         video.appendChild(source);
         container.appendChild(video);
 
+        // দেখা শেষ করার সময় মনে রাখার জন্য কী (key) তৈরি
         const videoProgressKey = `video_progress_${videoUrl}`;
 
+        // যখন ভিডিও প্লে হওয়ার জন্য প্রস্তুত হবে
         video.addEventListener("loadedmetadata", () => {
           const savedTime = localStorage.getItem(videoProgressKey);
           if (savedTime) {
@@ -100,6 +116,7 @@
           video.style.display = "block";
         });
 
+        // ভিডিও চলার সময় প্রতি সেকেন্ডে বর্তমান সময় localStorage-এ সেভ হবে
         video.addEventListener("timeupdate", () => {
           localStorage.setItem(videoProgressKey, video.currentTime);
         });
