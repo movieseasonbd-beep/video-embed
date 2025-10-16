@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Player</title>
     <style>
-      * { box-sizing: border-box; }
       body {
         margin: 0;
         background: #000;
@@ -13,102 +12,35 @@
         justify-content: center;
         align-items: center;
         height: 100vh;
-        color: #fff;
-        font-family: Arial, sans-serif;
-      }
-      #playerContainer {
-        width: 100%;
-        max-width: 900px;
-        position: relative;
-        background: #000;
-        aspect-ratio: 16 / 9;
       }
       video {
         width: 100%;
         height: 100%;
+        background: #000;
         border: none;
         outline: none;
-        background: #000;
-        /* প্রোগ্রেস বার লাল করা হয়েছে */
-        accent-color: red;
+        accent-color: red; /* progress bar লাল */
       }
-
-      /* 🎯 Play বোতাম (মাঝখানের বড়টা) লাল করা হয়েছে */
-      video::-webkit-media-controls-play-button {
-        filter: invert(28%) sepia(98%) saturate(7486%) hue-rotate(1deg) brightness(102%) contrast(119%);
-      }
+      /* play বোতাম লাল করা */
+      video::-webkit-media-controls-play-button,
       video::-webkit-media-controls-overlay-play-button {
         filter: invert(28%) sepia(98%) saturate(7486%) hue-rotate(1deg) brightness(102%) contrast(119%);
-      }
-
-      .message {
-        text-align: center;
-        color: #888;
-      }
-      .loader {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border: 4px solid #444;
-        border-top: 4px solid red; /* Loader লাল */
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin {
-        0% { transform: translate(-50%, -50%) rotate(0deg); }
-        100% { transform: translate(-50%, -50%) rotate(360deg); }
       }
     </style>
   </head>
   <body>
-    <div id="playerContainer">
-      <div class="loader" id="loader"></div>
-    </div>
+    <video controls autoplay id="player">
+      <source id="source" src="" type="video/mp4">
+      আপনার ব্রাউজার ভিডিও প্লে সাপোর্ট করে না।
+    </video>
 
     <script>
-      const params = new URLSearchParams(window.location.search);
-      const videoUrl = params.get("id");
-      const container = document.getElementById("playerContainer");
-      const loader = document.getElementById("loader");
-
-      if (videoUrl) {
-        const video = document.createElement("video");
-        video.setAttribute("controls", "");
-        video.setAttribute("autoplay", "");
-        video.setAttribute("preload", "metadata");
-        video.innerHTML = "Your browser doesn't support HTML5 video.";
-        video.style.display = "none";
-
-        const source = document.createElement("source");
-        source.src = videoUrl;
-        source.type = "video/mp4";
-        video.appendChild(source);
-        container.appendChild(video);
-
-        const videoProgressKey = video_progress_${videoUrl};
-
-        video.addEventListener("loadedmetadata", () => {
-          const savedTime = localStorage.getItem(videoProgressKey);
-          if (savedTime) {
-            video.currentTime = parseFloat(savedTime);
-          }
-        });
-
-        video.addEventListener("canplay", () => {
-          loader.remove();
-          video.style.display = "block";
-        });
-
-        video.addEventListener("timeupdate", () => {
-          localStorage.setItem(videoProgressKey, video.currentTime);
-        });
-
+      const url = new URLSearchParams(window.location.search).get("id");
+      if (url) {
+        document.getElementById("source").src = url;
+        document.getElementById("player").load();
       } else {
-        loader.remove();
-        container.innerHTML = "<p class='message'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
+        document.body.innerHTML = "<p style='color:white;text-align:center;'>❌ কোনো ভিডিও লিংক পাওয়া যায়নি!</p>";
       }
     </script>
   </body>
